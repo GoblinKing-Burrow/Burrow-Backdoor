@@ -1,0 +1,13 @@
+{
+  "schemaVersion": 1,
+  "releaseDate": "2026.10.19",
+  "sources": {
+    "burrow": "6b0284c605dc6ed8ba0dae03ee5bbf9194bad981",
+    "burrowBackend": "77f6da160ecae849aa83fc67d08ef4cc903d0b46",
+    "burrowUi": "eee912f1e55308c79695bc7a304224cc6a501eab",
+    "nodeGoblin": "42422cc42df619e47fec36e98293e5e4e51a7802",
+    "goblinSecretStore": "15eeea33e4d179c2571a976e5ec9cbfbd9a1673a",
+    "burrowSkills": "6860ba70b483e4bbd6ee3b7e5ea967dda6dfc211",
+    "burrowBackdoor": "8e9a1d9b1bd5950c3a1882883ea2fde78f035f16"
+  }
+}
