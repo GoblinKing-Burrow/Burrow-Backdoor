@@ -1,6 +1,6 @@
 # Tool reference
 
-Backdoor registers 34 tools under **Mod: Burrow Backdoor**. All schemas reject additional properties. Tools are discoverable as mod-authorized tools; Core still checks the trusted caller on every call. See [agent access](access.md) and [diagnostic limits](diagnostics.md).
+Backdoor registers 34 tools under **Mod: Backdoor**. All schemas reject additional properties. Tools are discoverable as mod-authorized tools; Core still checks the trusted caller on every call. See [agent access](access.md) and [diagnostic limits](diagnostics.md).
 
 Required arguments are marked **required**. Other arguments are optional. No arguments means `{}`. Bounds below describe the advertised schema; Core may apply additional validation, scoping, pagination, and output limits.
 
