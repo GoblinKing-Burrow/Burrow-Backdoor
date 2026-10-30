@@ -51,6 +51,15 @@ const managementTools = [
   ['burrow_get_mod_operation','Inspect one durable Backdoor-submitted lifecycle operation. Requires Backdoor administrative access.',object({operationId},['operationId']), (args) => args.context.modManagement.operation(args.input.operationId)],
 ];
 
+const apiRequestSchema = object({
+  method: string({ default: 'GET', description: 'HTTP method; defaults to GET. Core validates the method, without a Backdoor verb allowlist.' }),
+  path: string({ pattern: '^/api(?:/|\\?|$)', description: 'Relative home-Core /api path including any query string, not an absolute URL.' }),
+  headers: { type: 'object', additionalProperties: { anyOf: [string(), { type: 'array', items: string() }] } },
+  body: { description: 'Any JSON value. Mutually exclusive with bodyText and bodyBase64; Core validates body formats.' },
+  bodyText: string({ description: 'Raw UTF-8 request body; mutually exclusive with body and bodyBase64.' }),
+  bodyBase64: string({ description: 'Base64-encoded request bytes; mutually exclusive with body and bodyText.' }),
+}, ['path']);
+
 export function activate(context) {
   for (const [name, description, inputSchema, operation] of diagnosticTools) context.tools.register({
     name, description, inputSchema, availability: 'mod-authorized',
@@ -59,5 +68,17 @@ export function activate(context) {
   for (const [name, description, inputSchema, invoke] of managementTools) context.tools.register({
     name, description, inputSchema, availability: 'mod-authorized',
     handler: (input = {}) => invoke({ context, input: allowlisted(input, inputSchema) }),
+  });
+  context.tools.register({
+    name: 'burrow_api_request',
+    description: 'Call any home Burrow Core /api route, including powerful writes and private data. Requires Backdoor administrative access and the core-api-v1 grant. Discover routes with GET /api/openapi.json. Returns full Core status, headers, body, encoding and byteLength; finite streams are aggregated, binary is base64. Use the durable mod-management tools for lifecycle changes, especially self-update.',
+    inputSchema: apiRequestSchema,
+    availability: 'mod-authorized',
+    handler: (input = {}, caller) => {
+      if (typeof context.coreApi?.request !== 'function') {
+        return { ok: false, error: 'core_api_unavailable' };
+      }
+      return context.coreApi.request(allowlisted(input, apiRequestSchema), { signal: caller.signal });
+    },
   });
 }

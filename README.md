@@ -6,9 +6,9 @@
 
 *Sometimes we have to enter from the rear.*
 
-Burrow Backdoor gives an agent a controlled path back into the **home Burrow that hosts it**, even when the agent's shell and filesystem tools are pointed at a Node Goblin machine. It exposes caller-scoped diagnostics to every agent and explicit Core mod-management operations to operator-selected administrators. It does not create a separate MCP connection, call Burrow's external HTTP API, or require an API token.
+Burrow Backdoor gives an agent a controlled path back into the **home Burrow that hosts it**, even when the agent's shell and filesystem tools are pointed at a Node Goblin machine. It exposes caller-scoped diagnostics to every agent, durable mod-management operations to operator-selected administrators, and an explicitly granted **full Core API tool** for trusted administrators. It does not create a separate MCP connection, make an external HTTP connection, or require an API token. API requests dispatch in-process through the same handler used by the home Core's HTTP API.
 
-Backdoor is a **system mod** because it requests a privileged Core application interface unavailable to regular mods. It uses the same install, update, enable, disable, and uninstall lifecycle as other mods. System status grants nothing by itself; this manifest requests only `mod-management-v1`.
+Backdoor is a **system mod** because it requests a privileged Core application interface unavailable to regular mods. It uses the same install, update, enable, disable, and uninstall lifecycle as other mods. System status grants nothing by itself; this manifest requests `mod-management-v1` and `core-api-v1`. These are separate operator grants, not per-tool permissions.
 
 ## Install
 
@@ -16,11 +16,12 @@ Backdoor is a **system mod** because it requests a privileged Core application i
 2. Add the Backdoor repository as a mod source.
 3. Refresh the source and install **Burrow Backdoor**.
 4. Explicitly enable the mod. Newly installed mods remain disabled by design.
-5. Open **Settings → Backdoor → Admin Access**, explicitly approve Backdoor mod management, and assign administrative agents deliberately. Use **Global Access** separately for cross-agent diagnostics.
+5. Open **Settings → Backdoor → Admin Access** and assign administrative agents deliberately. Approve **mod management** for the eight lifecycle tools; separately approve **full Core API access** only if these agents should have powerful access to all API reads and writes. Use **Global Access** separately for cross-agent diagnostics.
+6. Restart Core when instructed after granting a new host capability.
 
-Once enabled, Burrow registers **Mod: Burrow Backdoor** with 26 diagnostic tools and 8 administrative tools. They are globally discoverable mod-authorized tools, but Core still authorizes every call from its trusted caller identity.
+Once enabled, Burrow registers **Mod: Backdoor** with 26 diagnostic tools, 8 durable mod-management tools, and `burrow_api_request` (**35 total**). They are globally discoverable mod-authorized tools, but Core still authorizes every call from its trusted caller identity.
 
-Backdoor requires a Core version that supports the declared `mod-management-v1` system capability. It fails activation rather than silently running with a weaker contract.
+Backdoor requires a Core version that recognizes both declared system capabilities. An older Core that rejects `core-api-v1` cannot load this manifest. On a compatible Core, Backdoor still loads when either grant is absent: diagnostics remain available, and the generic tool reports `{"ok":false,"error":"core_api_unavailable"}` when Core does not expose `context.coreApi`. A saved grant is not an effective host capability until Core has loaded it.
 
 ## Access model
 
@@ -32,7 +33,9 @@ Every agent can inspect its own sessions, runs, traces, context, saved-memory me
 
 ### Burrow administrative access
 
-Only agents in Core's `adminAgentIds` assignment can use mod-management tools, and only while Core has granted Backdoor its declared `mod-management-v1` capability. Diagnostic global access does not imply administrative access, and administrative access does not imply global diagnostics. Core checks its own authority record and the trusted active tool caller on every management request.
+Only agents in Core's `adminAgentIds` assignment can use the eight mod-management tools, and only while Core has granted Backdoor `mod-management-v1`. The same admin list gates `burrow_api_request`, but it additionally requires the separate, explicitly approved `core-api-v1` capability. Existing mod-management approval does **not** grant full API access. Core checks the effective capability, its current authority record, and the trusted active caller on every request; model arguments cannot supply authority.
+
+Diagnostic global access does not imply administration, and administration does not add global scope to the diagnostic tools. **Full API access is much broader than diagnostics:** an API administrator can read private cross-agent data and perform any writes exposed by Core's API. Grant it only to agents trusted with that power and the privacy responsibility it brings.
 
 The Settings panels use Core's authenticated `GET` / `PUT /api/operator/mods/burrow-backdoor/access` contract. PUT is a complete replacement, so each panel refreshes immediately before saving and preserves the other panel's assignments and unrelated grants. Newly granted host capabilities require a Core restart; revocations are checked at Core admission. Internal agent tool calls do not depend on browser cookies, Basic Auth, OIDC, bearer tokens, or the selected Node Goblin target.
 
@@ -52,7 +55,8 @@ The Settings panels use Core's authenticated `GET` / `PUT /api/operator/mods/bur
 - `burrow_get_session` is a diagnostic tail, not a complete transcript reader. It defaults to 50 turns and 1,000-character previews; `limit` is capped at 100 while `maxContentChars` is configurable.
 - `burrow_list_traces` defaults to 50, caps at 100, and returns `nextCursor` for continuation. The traversal is live rather than a retained snapshot.
 - Session-context and context-status tools omit transcript, prompt/support, evidence-selection, summary-text, and compression-history bodies.
-- Active-run results omit messages, answers, steering bodies, progress payloads, child purpose/results/errors, and other potentially huge content.
+- Active-run results retain compact parent/child identity, activity and status, but omit messages, answers, steering bodies, progress payloads, child purpose/results/errors, and other potentially huge content.
+- Session diagnostic turns preserve compact, source-authored delegation markers (`kind`, `source`, parent IDs, `subagentId`, `workerProfile`) where valid. This metadata projection does not pass through arbitrary metadata or raw minion task/result payloads, or infer authorship from a `user` role. Invalid, sensitive, multiline or oversized markers are omitted; turn content retains its existing bounded preview.
 - `burrow_get_trace` omits tool output by default. `includeToolOutput: true` requests the existing bounded trace preview.
 - Forge summaries exclude prompts, model settings, provider errors, and artifact URLs. PostgreSQL diagnostics expose no connection credentials.
 - Mod diagnostics are opt-in and read through dedicated Core interfaces, not arbitrary mod routes.
@@ -74,15 +78,33 @@ Read-only does not mean safe to publish. Review and redact diagnostics before pu
 
 Mutations return a persisted operation receipt promptly. `queued` or `running` means accepted/in progress—not success. Inspect the operation in a later tool call until it reaches `succeeded`, `failed`, or `interrupted`. Core waits for the submitting invocation to settle before mutation, so Backdoor can return its own update/disable/uninstall receipt before its old host is retired. A Core restart marks uncertain in-flight work `interrupted` rather than blindly replaying a mutation that may already have committed.
 
-Backdoor cannot add or remove sources and cannot receive source URLs, GitHub tokens, browser credentials, arbitrary installer flags, raw error bodies, database access, controller filesystem/process access, or arbitrary HTTP access. Source credentials already stored by Core remain inside Core.
+These eight tools deliberately expose only sanitized inventory, fixed lifecycle actions and durable receipts. They do not accept source URLs, credentials or arbitrary installer flags. Use them for mod lifecycle work, especially **Backdoor self-update, disable or uninstall**, rather than assuming a generic API request has the same durable receipt and caller-settlement guarantees. The separately granted full API tool is not restricted to these sanitized subsets.
+
+## Full Core API tool
+
+`burrow_api_request` calls any relative home-Core `/api` route, including Archive, operator/settings routes and newly added endpoints. Backdoor has **no endpoint or verb allowlist** and no copied route catalog. Discover the current API through the same tool:
+
+```json
+{"method":"GET","path":"/api/openapi.json"}
+```
+
+Read that running Core's schemas before making changes. `method` defaults to `GET`; `path` includes the query string. Optional `headers` maps names to strings or arrays of strings. Supply **at most one** of `body` (any JSON value), `bodyText` (UTF-8 text), or `bodyBase64` (encoded bytes); Core validates the method, relative path, headers and exclusive body formats. Core rejects absolute URLs, network-relative URLs and escapes outside `/api`; this facade is not arbitrary-network access.
+
+The result is the full Core response: `ok`, `status`, `headers`, `body`, `encoding` (`json`, `utf8`, or `base64`), and `byteLength`. Backdoor does not truncate, redact, or select a diagnostic subset. JSON is parsed, UTF-8 text is returned as text, and binary is base64; byte length describes original response bytes, not the encoded string length. Non-success API statuses remain responses to inspect. Core's native endpoint validation, pagination and technical resource limits still apply; a transport/resource failure is not a clipped successful response.
+
+Finite NDJSON or other streamed responses are **aggregated until completion** into one tool result, not delivered as real-time browser streaming. An endless event stream has no completed aggregate. Caller cancellation is forwarded to Core, but a cancelled tool or lost response does not prove a write was rolled back. Inspect state before retrying a mutation. Generic API requests do not automatically acquire durable lifecycle-operation semantics.
+
+**Full API access is powerful:** it can expose complete conversations, memory/evidence bodies, configuration, exports, and sensitive API data, and can change settings, run work, or delete data. Follow operator instructions and review the route, method and body before a write. Treat inputs, headers and returned bodies as private; redact before sharing. This is not a low-privilege diagnostic tool.
+
+Internal dispatch does not use browser cookies, login sessions or API tokens. It does **not** weaken external HTTP authentication: external clients still use Core's existing operator/token rules. The mod settings UI still receives only its restricted access-settings adapter, not an arbitrary API client.
 
 ## Security boundary
 
 - Core supplies caller agent/session/conversation/run identity; tool arguments cannot impersonate it.
 - Core-owned diagnostic `diagnosticAgentIds` and administrative `adminAgentIds` assignments are separate.
-- The mod receives only `context.runtimeDiagnostics.read` and its declared `context.modManagement` facade for these operations.
+- Diagnostic tools use `context.runtimeDiagnostics.read`; lifecycle tools use `context.modManagement`; the full API tool uses `context.coreApi.request(input, { signal: caller.signal })` only when Core exposes that effective capability.
 - Lifecycle work reuses Core's mod-distribution validation, recovery journals, source authentication, transitions, and persisted operation records.
-- Backdoor does not receive model/database/source credentials or direct filesystem/process access.
+- There is no raw controller filesystem/process, database or arbitrary-network facade. Full API responses are nevertheless not sanitized and can expose sensitive data or configuration that the requested endpoint returns; endpoint actions can launch work or affect integrations.
 - Node Goblin continues to own execution against the selected machine; Backdoor operates the home Burrow.
 - Disabling or unloading Backdoor revokes new live tool routing. Already accepted lifecycle operations are Core-owned and continue to terminal or interrupted state.
 - Backdoor uses the normal mod lifecycle. Being a system mod does not make it bundled or non-removable.

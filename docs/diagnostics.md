@@ -1,5 +1,11 @@
 # Diagnose your Burrow
 
+## Native peer messaging is separate from diagnostics
+
+Use native `agent_send_message` directly for a known canonical agent ID or unique full display name, including spaces. Exact IDs take precedence; unknown or ambiguous names fail without sending. If discovery or disambiguation is necessary and your runtime exposes `agents_list`, use that native directory rather than loading Backdoor or inspecting health/sessions. The directory lists IDs, names and enabled state, not access to peer data. It supports optional `query`, `includeDisabled`, `limit` and `cursor`; follow `nextCursor` with unchanged filters. Narrow the query or limit if the provider budget omits cards.
+
+Ordinary A2A does not require a Backdoor skill/provider or an MCP catalog lookup. On older runtimes without native discovery, use a known accepted recipient or an available directory only when needed. Follow the installed tool schemas: updated skill instructions do not add tools to older runtimes.
+
 ## A useful first pass
 
 1. Call `burrow_health` for runtime health and build identity.
@@ -16,7 +22,9 @@ Leave `agentId` out for caller-scoped work. Supply another agent only when your 
 
 Trace listing defaults to 50 and caps at 100. Continue using the returned `nextCursor`; traversal is live rather than a retained snapshot. Trace detail omits tool output unless `includeToolOutput: true` requests the existing bounded preview.
 
-Context tools return scalar context/compression information, not transcript, prompt/support, summary-text, evidence-selection, or compression-history bodies. Active-run summaries exclude messages, answers, steering bodies, progress payloads, and child purpose/result/error bodies.
+Session diagnostic turns preserve only valid, compact source-authored delegation markers: `kind`, `source`, parent agent/session/conversation/run IDs, `subagentId`, and `workerProfile`. This retains minion attribution without passing arbitrary metadata objects or task/result/error payloads through the metadata projection; turn content still uses bounded previews. Oversized, sensitive, multiline or invalid markers are omitted, not rewritten; a `user` role alone does not identify the operator as the author.
+
+Context tools return scalar context/compression information, not transcript, prompt/support, summary-text, evidence-selection, or compression-history bodies. Active-run summaries retain compact parent/child identity, status and activity, but exclude messages, answers, steering bodies, progress payloads, and child purpose/result/error bodies.
 
 ## Installation-wide investigations
 
@@ -33,4 +41,7 @@ Brains tools expose saved-memory counts, metadata, embedding/index state, and re
 !!! warning "Read-only is still private"
     Session previews, runtime evidence, agent identifiers, and operational metadata can be sensitive. Share only the information needed, after review and redaction.
 
+The separately approved full API tool can return complete private API bodies and perform writes. It does not inherit these diagnostic projections or scope limits; prefer the diagnostic tools when their lower-privilege view is sufficient.
+
 All arguments are listed in the [tool reference](tools.md).
+

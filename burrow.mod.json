@@ -1,10 +1,11 @@
 {
   "id": "burrow-backdoor",
   "name": "Backdoor",
-  "version": "2026.10.27",
+  "version": "2026.10.30",
   "system": true,
   "systemCapabilities": [
-    "mod-management-v1"
+    "mod-management-v1",
+    "core-api-v1"
   ],
   "managedSkills": [
     {

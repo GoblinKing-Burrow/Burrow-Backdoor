@@ -4,7 +4,10 @@ export const settingsSections = [
   { id: 'admin-access', label: 'Admin Access' },
 ];
 
-const MANAGEMENT_CAPABILITY = 'mod-management-v1';
+const ADMIN_CAPABILITIES = [
+  { id: 'mod-management-v1', label: 'Approve Backdoor mod management', help: 'Required before assigned administrators can install, update, enable, disable, or uninstall mods.' },
+  { id: 'core-api-v1', label: 'Approve Backdoor Core API access', help: 'Allows assigned administrators to use the Core API through Backdoor.' },
+];
 const sectionConfig = {
   'global-access': {
     key: 'diagnosticAgentIds',
@@ -25,7 +28,7 @@ const sectionConfig = {
     optionHelp: 'Can administer Burrow when the capability is approved',
     saveLabel: 'Save admin access',
     savedMessage: 'Admin access saved.',
-    capability: MANAGEMENT_CAPABILITY,
+    capabilities: ADMIN_CAPABILITIES,
   },
 };
 
@@ -93,9 +96,9 @@ export function mountSettings({ section, primary, overflow, accessApi, agents })
   form.append(el('p', config.description, 'settings-help'));
   form.append(el('p', config.independence, 'settings-help'));
 
-  let capabilityInput = null;
+  const capabilityInputs = new Map();
   const capabilityBox = el('div', null, 'backdoor-capability');
-  if (config.capability) form.append(capabilityBox);
+  if (config.capabilities) form.append(capabilityBox);
 
   const list = el('div', null, 'backdoor-agent-list');
   list.setAttribute('aria-label', config.ariaLabel);
@@ -124,25 +127,27 @@ export function mountSettings({ section, primary, overflow, accessApi, agents })
     saving = next;
     save.disabled = next;
     for (const input of inputs.values()) input.disabled = next;
-    if (capabilityInput) capabilityInput.disabled = next;
+    for (const input of capabilityInputs.values()) input.disabled = next;
   };
 
   function renderCapability(nextAccess) {
     capabilityBox.replaceChildren();
-    capabilityInput = null;
-    if (!config.capability) return;
-    if (!nextAccess.declaredCapabilities.includes(config.capability)) {
-      capabilityBox.append(el('p', 'Backdoor does not currently declare its required administrative capability.', 'settings-request-error'));
-      return;
+    capabilityInputs.clear();
+    for (const capability of config.capabilities ?? []) {
+      if (!nextAccess.declaredCapabilities.includes(capability.id)) {
+        capabilityBox.append(el('p', `Backdoor does not currently declare ${capability.id}.`, 'settings-request-error'));
+        continue;
+      }
+      const input = el('input');
+      input.type = 'checkbox';
+      input.checked = nextAccess.grants.includes(capability.id);
+      capabilityInputs.set(capability.id, input);
+      const copy = el('span', capability.label);
+      copy.append(el('small', capability.help));
+      const label = el('label', null, 'backdoor-capability-option');
+      label.append(input, copy);
+      capabilityBox.append(label);
     }
-    capabilityInput = el('input');
-    capabilityInput.type = 'checkbox';
-    capabilityInput.checked = nextAccess.grants.includes(config.capability);
-    const copy = el('span', 'Approve Backdoor mod management');
-    copy.append(el('small', 'Required before assigned administrators can install, update, enable, disable, or uninstall mods.'));
-    const label = el('label', null, 'backdoor-capability-option');
-    label.append(capabilityInput, copy);
-    capabilityBox.append(label);
   }
 
   function render(nextAccess) {
@@ -207,10 +212,10 @@ export function mountSettings({ section, primary, overflow, accessApi, agents })
       // this panel preserves fields owned by the other panel and any unknown grants.
       const current = await readCurrent();
       const nextAccess = { ...current, [config.key]: selectedIds() };
-      if (config.capability && capabilityInput) {
-        nextAccess.grants = capabilityInput.checked
-          ? [...new Set([...current.grants, config.capability])]
-          : current.grants.filter(capability => capability !== config.capability);
+      for (const [id, input] of capabilityInputs) {
+        nextAccess.grants = input.checked
+          ? [...new Set([...nextAccess.grants, id])]
+          : nextAccess.grants.filter(capability => capability !== id);
       }
       const result = readAccess(await accessApi({
         method: 'PUT',

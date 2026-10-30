@@ -1,8 +1,8 @@
 # Tool reference
 
-Backdoor registers 34 tools under **Mod: Backdoor**. All schemas reject additional properties. Tools are discoverable as mod-authorized tools; Core still checks the trusted caller on every call. See [agent access](access.md) and [diagnostic limits](diagnostics.md).
+Backdoor registers **35 tools**: 26 diagnostics, eight durable mod-management tools and one full Core API tool under **Mod: Backdoor**. All top-level input schemas reject additional properties; the generic API tool accepts arbitrary header names and any JSON request body. Tools are discoverable as mod-authorized tools; Core still checks the trusted caller on every call. See [agent access](access.md) and [diagnostic limits](diagnostics.md).
 
-Required arguments are marked **required**. Other arguments are optional. No arguments means `{}`. Bounds below describe the advertised schema; Core may apply additional validation, scoping, pagination, and output limits.
+Required arguments are marked **required**. Other arguments are optional. No arguments means `{}`. Bounds below describe the advertised schema; Core may apply additional validation, scoping, pagination, and technical resource limits. Diagnostic output limits do not apply as a Backdoor filter on full API results.
 
 ## Diagnostic tools
 
@@ -145,7 +145,7 @@ List compact session summaries for an authorized agent.
 
 ### burrow_get_session
 
-Read a bounded recent session tail for an authorized agent. Use conversation reading for complete history.
+Read a bounded recent session tail for an authorized agent. Use conversation reading for complete history. Compact source-authored delegation markers are preserved where valid; the metadata projection omits arbitrary metadata and task/result payloads. Turn content remains a bounded preview.
 
 | Argument | Type | Requirement and constraints |
 | --- | --- | --- |
@@ -235,7 +235,7 @@ Read bounded context-window, live usage and compression status for an authorized
 
 ## Administrative tools
 
-All eight tools require administrative access and the approved capability, including inventory and operation lookup. Mutation receipts require [later verification](operations.md).
+All eight tools require administrative access and the approved `mod-management-v1` capability, including inventory and operation lookup. The separate `core-api-v1` grant is not required by these tools. Mutation receipts require [later verification](operations.md).
 
 ### burrow_mod_management_inventory
 
@@ -301,6 +301,57 @@ Inspect one durable Backdoor-submitted lifecycle operation. Requires Backdoor ad
 | Argument | Type | Requirement and constraints |
 | --- | --- | --- |
 | `operationId` | string | **required**; format: uuid |
+
+## Full Core API tool
+
+### burrow_api_request
+
+Call any home Burrow Core `/api` route through the same request handler used by HTTP. Requires the trusted active caller to be in Core's existing `adminAgentIds` list and the separate `core-api-v1` capability to be effective and currently approved. Neither global diagnostics nor mod-management approval grants this access. There is no per-tool or per-route grant.
+
+!!! danger "Powerful writes and private data"
+    This tool is not a diagnostic projection. It can change settings, run work, delete data, and read complete private API responses. Backdoor does not truncate, redact or select fields. Review route, method and body before writes, follow operator instructions, and protect both inputs and outputs from unintended disclosure.
+
+| Argument | Type | Requirement and constraints |
+| --- | --- | --- |
+| `method` | string | optional; defaults to `GET`; Core validates method syntax; no Backdoor verb allowlist |
+| `path` | string | **required**; relative `/api` path including any query string; Core rejects absolute/network-relative URLs and escapes outside `/api` |
+| `headers` | object | optional; any header names with string or array-of-string values; Core validates HTTP syntax |
+| `body` | any JSON value | optional; object, array, scalar or null; exclusive with the two raw-body formats |
+| `bodyText` | string | optional; raw UTF-8 request body; exclusive with `body` and `bodyBase64` |
+| `bodyBase64` | string | optional; base64-encoded request bytes; exclusive with `body` and `bodyText` |
+
+Core validates body formats and rejects conflicting representations instead of silently choosing one. Backdoor forwards headers without a safe-header subset; they are request data, never caller authority. No browser cookies, API token or external login is needed for internal dispatch, and supplying one cannot replace the Core grant/admin checks. External HTTP authentication remains unchanged.
+
+#### Discover the running API
+
+Use this same tool; there is no redundant endpoint catalog or discovery tool:
+
+```json
+{"method":"GET","path":"/api/openapi.json"}
+```
+
+Inspect the returned schemas for the running Core before selecting a route. Any `/api` route, including Archive, operator/settings routes, mod routes and new endpoints, automatically uses the shared handler without a Backdoor tool update or an endpoint/verb allowlist. Native endpoint validation and pagination still apply. Relative `/api` access is not arbitrary-network access; endpoint actions may nevertheless start work or use configured integrations.
+
+For a route that accepts JSON, supply its documented method/path and `body`. For raw text or bytes, set the appropriate content-type header and use only `bodyText` or `bodyBase64`. Preserve the complete query string and encoded parameter values.
+
+#### Result
+
+The tool returns the complete Core response object unchanged:
+
+| Field | Meaning |
+| --- | --- |
+| `ok` | Core's response success indicator; inspect `status` and body for the operation outcome |
+| `status` | Raw HTTP-style Core status, including non-success statuses |
+| `headers` | Full response header object; values are strings or arrays of strings |
+| `body` | Parsed JSON, UTF-8 text, base64-encoded bytes, or null for an empty response |
+| `encoding` | `json`, `utf8`, or `base64` |
+| `byteLength` | Original response byte count, before base64 expansion or JSON parsing |
+
+Binary results use `encoding: "base64"`; decode the body as bytes, not UTF-8. Finite NDJSON is returned as complete UTF-8 text with its line boundaries, after the response ends. This is an aggregate tool result, **not real-time browser streaming**. An endless event stream cannot produce a completed aggregate. Core transport/resource limits can fail a request; Backdoor never converts an oversized response into truncated success.
+
+When Core does not expose `context.coreApi`, activation still succeeds and this tool returns `{"ok":false,"error":"core_api_unavailable"}`. Check compatibility, the explicit capability grant and the required Core restart. API response errors remain raw response statuses/bodies; transport, cancellation, validation and authority failures may fail the tool call.
+
+Caller cancellation is forwarded to Core. A cancelled/failed call or a lost response does not establish that a write was rolled back. Inspect current state before retrying. Generic requests do not automatically gain durable receipt, restart recovery or caller-settlement guarantees: use the **eight mod-management tools for lifecycle changes**, especially Backdoor self-update, disable or uninstall. See [operations and recovery](operations.md).
 
 ## Input conventions
 

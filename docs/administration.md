@@ -1,7 +1,7 @@
 # Manage mods
 
 !!! danger "Administrative tools change the home Burrow"
-    These tools can change installed code and availability. An assigned administrator with the approved Core capability can invoke them. Backdoor does not add a separate per-call confirmation dialog. Follow your own operator instructions and review the intended target and action before submitting.
+    These eight tools can change installed code and availability. An assigned administrator with the approved `mod-management-v1` capability can invoke them; the separate full API grant is not needed. Backdoor does not add a separate per-call confirmation dialog. Follow your own operator instructions and review the intended target and action before submitting.
 
 ## Before changing anything
 
@@ -28,8 +28,12 @@ Installation does not automatically authorize a new system capability. Manage su
 
 Save the returned `operation.id`. Call `burrow_get_mod_operation` with that UUID in a later tool call. **A queued receipt is not a successful update.** Verify the terminal status and result, then recheck inventory where appropriate. See [operations and recovery](operations.md).
 
-## Deliberate limits
+## Deliberate management-tool limits
 
-Backdoor cannot add/remove mod sources or receive source URLs, source credentials, arbitrary installer flags, raw error bodies, direct database access, controller filesystem/process access, or arbitrary HTTP access. Source authentication stays inside Core. Use operator Settings to manage source configuration.
+These eight tools cannot add/remove mod sources or accept source URLs, source credentials or arbitrary installer flags. Inventory and errors are sanitized; source authentication stays inside Core. Use operator Settings to manage source configuration when you have not explicitly authorized broader API actions.
+
+The separately granted [`burrow_api_request`](tools.md#burrow_api_request) is not restricted to these management projections: it can call all Core API routes, including sensitive reads and powerful writes. It is still relative `/api` dispatch, not a direct database, filesystem/process or arbitrary-network facade.
+
+Prefer these durable lifecycle tools for every mod change, **especially Backdoor self-update, disable or uninstall**. A generic API request may retire its caller before returning and does not automatically get the persisted receipt and wait-for-caller behavior described here.
 
 Lifecycle actions reuse Core distribution validation, authentication, recovery journals, and normal transitions. Backdoor being a system mod does not bypass those checks.

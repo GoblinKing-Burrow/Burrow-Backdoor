@@ -2,7 +2,7 @@
 
 ## No Backdoor tool group
 
-Check **Settings → Mods**: Backdoor must be installed, enabled, and successfully loaded. Fresh installations start disabled. Confirm Core supports the declared system capability and that Core/Backdoor releases are compatible. Disabling, unloading, or uninstalling Backdoor removes live tool routing.
+Check **Settings → Mods**: Backdoor must be installed, enabled, and successfully loaded. Fresh installations start disabled. Confirm Core recognizes both declared system capabilities and that Core/Backdoor releases are compatible. Disabling, unloading, or uninstalling Backdoor removes live tool routing.
 
 ## Own diagnostics work, another agent is forbidden
 
@@ -10,7 +10,15 @@ That is the default boundary. Assign the caller in **Global Access** only if cro
 
 ## Administration is forbidden
 
-Confirm the calling agent is in **Admin Access** and **Approve Backdoor mod management** is checked. Follow any Core restart notice after a new capability grant. Core also rechecks authority immediately before queued work starts; access revoked after submission can make an operation fail.
+Confirm the calling agent is in **Admin Access** and the relevant capability is checked: **mod management** for the eight durable management tools, or **full Core API access** for `burrow_api_request`. These approvals are independent; global diagnostics never grants either. Follow any Core restart notice after a new capability grant. Core also rechecks authority immediately before queued work starts; access revoked after submission can make an operation fail.
+
+## Full API reports core_api_unavailable
+
+Backdoor can load without the effective full API capability. Check that Core supports `core-api-v1`, that it has been separately approved, and that Core was restarted after a new host grant. A saved authority record or a visible tool does not prove that the running host received `context.coreApi`. Do not add cookies, tokens or a service URL to work around it.
+
+For forbidden API calls, verify the current caller's admin assignment and current capability grant; revocation is checked at admission. Native API validation errors and non-success statuses must also be inspected in the complete returned response. Discover the running schema with `GET /api/openapi.json` through the same tool.
+
+Full API results are not truncated diagnostic subsets. Binary data uses `encoding: "base64"`; decode it as bytes. Finite NDJSON arrives only after completion; this tool is not a real-time browser/event stream, and an endless stream has no completed aggregate. Core resource/transport failures are errors rather than clipped successful output. After cancellation or a lost reply, inspect state before retrying a write.
 
 ## Settings say access is unavailable
 
@@ -39,7 +47,7 @@ Keep its operation ID and inspect it in a later call. A receipt is acceptance, n
 | `mod_management_operation_not_found` | Exact receipt UUID and Backdoor ownership |
 | `mod_management_failed` / `mod_management_interrupted` | Sanitized failure or uncertain outcome; inspect actual state before retrying |
 
-Errors intentionally omit raw provider/source bodies. Do not expect credentials or arbitrary internals in diagnostic output.
+The management tools intentionally omit raw provider/source bodies. Diagnostic tools also use scoped projections. The separately approved full API tool returns raw endpoint error bodies and headers and can expose sensitive data; do not apply diagnostic privacy assumptions to it.
 
 ## Empty, truncated, or unsupported diagnostics
 

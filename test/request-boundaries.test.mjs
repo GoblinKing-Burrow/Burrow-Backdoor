@@ -20,3 +20,21 @@ test('direct handlers only forward advertised fields and retain fixed operation/
   await tools.get('burrow_mod_management_inventory').handler({ limit: 3, action: 'install', sourceUrl: 'forbidden' });
   assert.deepEqual(management.at(-1), { method: 'inventory', input: { limit: 3 } });
 });
+
+test('generic API handler only forwards request fields, never model-supplied authority or transport options', async () => {
+  const tools = new Map();
+  const calls = [];
+  activate({
+    tools: { register: tool => tools.set(tool.name, tool) },
+    coreApi: { request: async (input, options) => calls.push({ input, options }) },
+  });
+  const signal = new AbortController().signal;
+  const input = { method: 'POST', path: '/api/future/route?query=preserved', headers: { 'x-custom': ['one', 'two'] }, body: { nested: { agentId: 'ordinary-route-data' } } };
+  await tools.get('burrow_api_request').handler({
+    ...input, agentId: 'forged-admin', caller: { agentId: 'forged-admin' }, ownerModId: 'other-mod',
+    signal: 'forged-signal', global: true, assertCallerActive: false, maxResponseBytes: 1,
+    url: 'https://outside.invalid', operation: 'unrelated',
+  }, { agentId: 'trusted-caller', signal });
+  assert.deepEqual(calls, [{ input, options: { signal } }]);
+  assert.strictEqual(calls[0].input.body, input.body, 'arbitrary JSON route data is not sanitized');
+});

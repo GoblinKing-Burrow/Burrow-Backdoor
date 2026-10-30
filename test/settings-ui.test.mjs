@@ -29,7 +29,7 @@ const defaultAccess = {
   grants: ['mod-management-v1'],
   adminAgentIds: ['agent-a'],
   diagnosticAgentIds: ['agent-b'],
-  declaredCapabilities: ['mod-management-v1'],
+  declaredCapabilities: ['mod-management-v1', 'core-api-v1'],
   restartRequired: false,
 };
 
@@ -73,8 +73,8 @@ function inputs(root) {
 function agentInputs(root) {
   return inputs(root).filter(input => input.value);
 }
-function capabilityInput(root) {
-  return inputs(root).find(input => !input.value);
+function capabilityInput(root, index = 0) {
+  return inputs(root).filter(input => !input.value)[index];
 }
 function copy(root) {
   return root.descendants().map(node => node.textContent).join(' ');
@@ -99,6 +99,8 @@ test('admin panel renders assignments and explicit declared capability approval'
   assert.deepEqual(agentInputs(root).map(input => [input.value, input.checked]), [['agent-a', true], ['agent-b', false]]);
   assert.equal(capabilityInput(root).checked, true);
   assert.match(copy(root), /Approve Backdoor mod management/);
+  assert.equal(capabilityInput(root, 1).checked, false);
+  assert.match(copy(root), /Approve Backdoor Core API access/);
   assert.match(copy(root), /does not grant or imply global diagnostic access/);
 }));
 
@@ -178,4 +180,29 @@ test('fails clearly when the UI host does not provide Core-owned access', async 
   const alert = root.descendants().find(node => node.role === 'alert');
   assert.match(alert.textContent, /does not support Core-owned mod access/);
   assert.equal(inputs(root).length, 0);
+}));
+
+
+test('admin save independently approves Core API and preserves refreshed unknown grants and diagnostics', async () => fixture({
+  section: 'admin-access',
+  refreshedAccess: { ...defaultAccess, grants: ['mod-management-v1', 'future-capability-v1'], diagnosticAgentIds: ['agent-a'] },
+}, async ({ root, calls }) => {
+  capabilityInput(root, 1).checked = true;
+  await root.fire('submit');
+  await flush();
+  assert.equal(calls.length, 3);
+  assert.deepEqual(JSON.parse(calls.at(-1).body), {
+    grants: ['mod-management-v1', 'future-capability-v1', 'core-api-v1'],
+    adminAgentIds: ['agent-a'], diagnosticAgentIds: ['agent-a'],
+  });
+}));
+
+test('undeclared capability is not offered and an existing grant is preserved', async () => fixture({
+  section: 'admin-access',
+  access: { ...defaultAccess, grants: ['core-api-v1'], declaredCapabilities: ['mod-management-v1'] },
+}, async ({ root, calls }) => {
+  assert.match(copy(root), /does not currently declare core-api-v1/);
+  assert.equal(inputs(root).filter(input => !input.value).length, 1);
+  await root.fire('submit');
+  assert.deepEqual(JSON.parse(calls.at(-1).body).grants, ['core-api-v1']);
 }));

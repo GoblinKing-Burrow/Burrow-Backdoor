@@ -18,6 +18,8 @@ A failed operation can have `result.outcome: "unknown"` because an error may occ
 
 ## Backdoor can update or disable itself
 
+Use `burrow_update_mod`, `burrow_disable_mod`, or `burrow_uninstall_mod` for self-lifecycle work. The generic API tool is not a substitute for these eight durable management tools; a raw lifecycle endpoint can retire the calling host before returning.
+
 Core waits for the submitting tool invocation to settle before executing the mutation. This lets Backdoor return a receipt before its old host is retired during its own update, disable, or uninstall.
 
 Disabling/unloading Backdoor revokes new live tool routing. Accepted work is Core-owned; it can continue even when the Backdoor host is gone, subject to authority checks before execution. If you disabled or uninstalled Backdoor, use operator **Settings → Mods** to inspect/recover availability. Do not assume you can keep polling through an unloaded tool group.
@@ -31,3 +33,9 @@ Check the target’s version, installation and enabled state. Resolve a source, 
 ## Pending capability calls are different
 
 `burrow_mod_pending_operations` is a global diagnostic view of currently active Core-hosted mod capability calls. It does not replace durable management receipts, operation IDs, or their terminal statuses.
+
+## Generic API requests are not lifecycle receipts
+
+`burrow_api_request` returns a complete status/headers/body aggregate from the requested Core endpoint. A response may itself contain a durable job ID or receipt if that endpoint defines one; the generic tool does not create one or automatically add restart recovery and caller-settlement ordering. Inspect the running API schema and follow the endpoint's own completion contract.
+
+Finite NDJSON is collected until response completion, not streamed to the model in real time. Caller cancellation reaches Core, but cancellation, a timeout or a lost reply does not prove that a write was undone or detached work stopped. Reconcile state before retrying a mutation.

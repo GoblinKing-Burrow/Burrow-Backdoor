@@ -2,7 +2,7 @@
 
 ## Requirements
 
-Use a compatible Burrow Core with the `mod-management-v1` system capability and the Core-owned mod access settings adapter. Backdoor fails activation on an unsupported capability contract; it does not silently fall back to a weaker one. Keep Core and Backdoor on compatible releases.
+Use a compatible Burrow Core that recognizes both `mod-management-v1` and `core-api-v1` and provides the Core-owned mod access settings adapter. An older Core that rejects the new capability cannot load this manifest. A compatible Core can load Backdoor without either grant; the API tool then explicitly reports `core_api_unavailable` if Core does not expose it. Keep Core and Backdoor on compatible releases.
 
 On Core builds containing the mod-access authentication fix, the access settings follow Core’s configured authentication mode: a verified operator login is required when authentication is enabled; with `authMode: none`, direct UI access does not require a separate login. API tokens still cannot authorize this operator route. Older Core builds reject access with authentication disabled; see [settings troubleshooting](troubleshooting.md#settings-say-access-is-unavailable).
 
@@ -13,18 +13,18 @@ On Core builds containing the mod-access authentication fix, the access settings
 3. Refresh the source and install **Burrow Backdoor**.
 4. Explicitly enable the mod. A fresh installation remains disabled until enabled.
 5. Open **Settings → Backdoor** to choose access. Ordinary agents can use their own diagnostics without assignment to either list.
-6. For administration, open **Admin Access**, select **Approve Backdoor mod management**, choose the administrative agents, and save. Restart Core when the panel reports that a newly granted host capability requires it.
+6. For mod lifecycle administration, open **Admin Access**, approve **mod management**, choose the administrative agents, and save. For full API reads and writes, separately approve **full Core API access** for that same admin list only after reviewing [security and trust](security.md). Existing management approval does not grant API access. Restart Core when the panel reports that a newly granted host capability requires it.
 7. For cross-agent diagnostics, separately choose agents under **Global Access** and save.
 
 ## Verify
 
-Ask an agent to call `burrow_health` and inspect its own sessions with `burrow_list_sessions`. The tool group is **Mod: Backdoor**. There are 34 registered tools; discovery does not imply permission to execute every one.
+Ask an agent to call `burrow_health` and inspect its own sessions with `burrow_list_sessions`. The tool group is **Mod: Backdoor**. There are 35 registered tools (26 diagnostics, eight durable mod-management tools and one full API tool); discovery does not imply permission to execute every one.
 
-For an assigned administrator, `burrow_mod_management_inventory` verifies administrative access without changing mods. An administrator is not automatically a global diagnostician.
+For an assigned administrator, `burrow_mod_management_inventory` verifies administrative access without changing mods. For an administrator with the separate API grant, `burrow_api_request` with `{"method":"GET","path":"/api/openapi.json"}` verifies API access without changing state and discovers the running schema. This raw result is not a diagnostic subset. An administrator is not automatically a global diagnostician; full API approval nevertheless permits cross-agent API data access.
 
 ## Configuration and updates
 
-There is no Backdoor service URL, bearer token, proxy, listener, or mod-owned access configuration. Core owns grants and agent assignments independently of the mod lifecycle. The manifest identifies the mod as `burrow-backdoor`, declares `system: true`, and requests `mod-management-v1`.
+There is no Backdoor service URL, bearer token, proxy, listener, or mod-owned access configuration. Core owns grants and agent assignments independently of the mod lifecycle. The manifest identifies the mod as `burrow-backdoor`, declares `system: true`, and requests `mod-management-v1` and `core-api-v1` as separate capabilities.
 
 Use normal **Settings → Mods** update, disable, and uninstall actions, or use the [administrative tools](administration.md) from an authorized agent. System-mod status does not make Backdoor bundled, always enabled, or non-removable.
 
