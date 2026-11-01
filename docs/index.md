@@ -36,4 +36,4 @@ Backdoor works inside Burrow. There is no separate MCP server, API token, listen
 | Use the running Core API | [Full API tool reference](tools.md#burrow_api_request) |
 | Understand a queued or interrupted change | [Operations and recovery](operations.md) |
 
-See the [public source](https://github.com/GoblinKing-Burrow/Burrow-Backdoor), [Burrow guide](https://burrow-docs.blissful-psychosis.com/), and [Node Goblin guide](https://nodegoblin-docs.blissful-psychosis.com/).
+See the [public source](https://github.com/GoblinKing-Burrow/Burrow-Backdoor), [Burrow guide](https://docs.goblin-kingdom.com/), and [Node Goblin guide](https://docs.goblin-kingdom.com/node-goblin/).
