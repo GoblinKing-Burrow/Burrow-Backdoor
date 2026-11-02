@@ -18,7 +18,7 @@ Backdoor can load without the effective full API capability. Check that Core sup
 
 For forbidden API calls, verify the current caller's admin assignment and current capability grant; revocation is checked at admission. Native API validation errors and non-success statuses must also be inspected in the complete returned response. Discover the running schema with `GET /api/openapi.json` through the same tool.
 
-Full API results are not truncated diagnostic subsets. Binary data uses `encoding: "base64"`; decode it as bytes. Finite NDJSON arrives only after completion; this tool is not a real-time browser/event stream, and an endless stream has no completed aggregate. Core resource/transport failures are errors rather than clipped successful output. After cancellation or a lost reply, inspect state before retrying a write.
+Full API results are not truncated diagnostic subsets. Binary data uses `encoding: "base64"`; decode it as bytes. Finite NDJSON arrives only after completion; this tool is not a real-time browser/event stream, and an endless stream has no completed aggregate. Core resource/transport failures are errors rather than clipped successful output. In particular, `core_api_response_too_large` means the aggregate exceeded Core's response allocation ceiling (currently 96 MiB by default); use endpoint pagination or narrow the request. After cancellation or a lost reply, inspect state before retrying a write.
 
 ## Settings say access is unavailable
 

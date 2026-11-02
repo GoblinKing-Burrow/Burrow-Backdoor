@@ -347,7 +347,7 @@ The tool returns the complete Core response object unchanged:
 | `encoding` | `json`, `utf8`, or `base64` |
 | `byteLength` | Original response byte count, before base64 expansion or JSON parsing |
 
-Binary results use `encoding: "base64"`; decode the body as bytes, not UTF-8. Finite NDJSON is returned as complete UTF-8 text with its line boundaries, after the response ends. This is an aggregate tool result, **not real-time browser streaming**. An endless event stream cannot produce a completed aggregate. Core transport/resource limits can fail a request; Backdoor never converts an oversized response into truncated success.
+Binary results use `encoding: "base64"`; decode the body as bytes, not UTF-8. Finite NDJSON is returned as complete UTF-8 text with its line boundaries, after the response ends. This is an aggregate tool result, **not real-time browser streaming**. An endless event stream cannot produce a completed aggregate. Core currently defaults to a 96 MiB aggregate-response allocation ceiling. Exceeding it fails with `core_api_response_too_large`, never truncated success. Use endpoint pagination or narrower queries rather than expecting a clipped result.
 
 When Core does not expose `context.coreApi`, activation still succeeds and this tool returns `{"ok":false,"error":"core_api_unavailable"}`. Check compatibility, the explicit capability grant and the required Core restart. API response errors remain raw response statuses/bodies; transport, cancellation, validation and authority failures may fail the tool call.
 

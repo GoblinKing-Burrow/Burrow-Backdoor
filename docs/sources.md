@@ -1,6 +1,10 @@
 # Sources and development
 
-## Current implementation delta — 30 October 2026
+## Full reconciliation — 1 November 2026
+
+All eleven Backdoor guides were checked against mod `b03239d3cae16a5b6f7cfd5174cf7bb88cdff01a` and Core `8b5889115680bcdbf698f1b93126254e1cf4d2e6`: all 35 registered tool schemas, native peer discovery/A2A separation, access settings, scoped diagnostics, durable management receipts and full API request/response boundaries. The response-size error guidance now names the implemented default allocation ceiling. This is static implementation reconciliation, not live application or provider execution. Public packages may lag these source pins.
+
+## Historical implementation delta — 30 October 2026
 
 This ordinary review follows Backdoor `a8c40cd0210be6c5db734a0b5af9c0d39700d182` (package **2026.10.29**) and Core `bea2171508d1821440ed5c554a688768848699c9`. The full Core API tool, separate capability grant, current settings, response formats, cancellation behavior and diagnostic delegation markers were compared with implementation and test declarations. These are source checks, not application tests or live-provider certification. The previous full reconciliation was 25 October; unchanged contracts retain that evidence. Public packages can lag the development source, so verify installed Core and Backdoor capabilities.
 
