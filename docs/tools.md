@@ -235,7 +235,7 @@ Read bounded context-window, live usage and compression status for an authorized
 
 ## Administrative tools
 
-All eight tools require administrative access and the approved `mod-management-v1` capability, including inventory and operation lookup. The separate `core-api-v1` grant is not required by these tools. Mutation receipts require [later verification](operations.md).
+All eight tools require membership in Core’s `modManagementAgentIds` list and the approved `mod-management-v1` capability, including inventory and operation lookup. The separate `core-api-v1` grant is not required by these tools. Mutation receipts require [later verification](operations.md).
 
 ### burrow_mod_management_inventory
 
@@ -306,10 +306,11 @@ Inspect one durable Backdoor-submitted lifecycle operation. Requires Backdoor ad
 
 ### burrow_api_request
 
-Call any home Burrow Core `/api` route through the same request handler used by HTTP. Requires the trusted active caller to be in Core's existing `adminAgentIds` list and the separate `core-api-v1` capability to be effective and currently approved. Neither global diagnostics nor mod-management approval grants this access. There is no per-tool or per-route grant.
+Call any home Burrow Core `/api` route through the same request handler used by HTTP. Requires the trusted active caller to be in Core's independent `coreApiAgentIds` list and the separate `core-api-v1` capability to be effective and currently approved. Neither global diagnostics nor mod-management approval grants this access. There is no per-tool or per-route grant.
 
 !!! danger "Powerful writes and private data"
     This tool is not a diagnostic projection. It can change settings, run work, delete data, and read complete private API responses. Backdoor does not truncate, redact or select fields. Review route, method and body before writes, follow operator instructions, and protect both inputs and outputs from unintended disclosure.
+
 
 | Argument | Type | Requirement and constraints |
 | --- | --- | --- |

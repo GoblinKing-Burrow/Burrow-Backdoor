@@ -10,19 +10,19 @@ That is the default boundary. Assign the caller in **Global Access** only if cro
 
 ## Administration is forbidden
 
-Confirm the calling agent is in **Admin Access** and the relevant capability is checked: **mod management** for the eight durable management tools, or **full Core API access** for `burrow_api_request`. These approvals are independent; global diagnostics never grants either. Follow any Core restart notice after a new capability grant. Core also rechecks authority immediately before queued work starts; access revoked after submission can make an operation fail.
+Confirm the calling agent is selected in the matching **Admin Access** group and its capability is checked: **mod management** for the eight durable management tools, or **full Core API access** for `burrow_api_request`. Both the approvals and their `modManagementAgentIds` / `coreApiAgentIds` assignments are independent; global diagnostics never grants either. Follow any Core restart notice after a new capability grant. Core also rechecks authority immediately before queued work starts; access revoked after submission can make an operation fail.
 
 ## Full API reports core_api_unavailable
 
 Backdoor can load without the effective full API capability. Check that Core supports `core-api-v1`, that it has been separately approved, and that Core was restarted after a new host grant. A saved authority record or a visible tool does not prove that the running host received `context.coreApi`. Do not add cookies, tokens or a service URL to work around it.
 
-For forbidden API calls, verify the current caller's admin assignment and current capability grant; revocation is checked at admission. Native API validation errors and non-success statuses must also be inspected in the complete returned response. Discover the running schema with `GET /api/openapi.json` through the same tool.
+For forbidden API calls, verify the current caller's `coreApiAgentIds` assignment and current capability grant; revocation is checked at admission. Native API validation errors and non-success statuses must also be inspected in the complete returned response. Discover the running schema with `GET /api/openapi.json` through the same tool.
 
 Full API results are not truncated diagnostic subsets. Binary data uses `encoding: "base64"`; decode it as bytes. Finite NDJSON arrives only after completion; this tool is not a real-time browser/event stream, and an endless stream has no completed aggregate. Core resource/transport failures are errors rather than clipped successful output. In particular, `core_api_response_too_large` means the aggregate exceeded Core's response allocation ceiling (currently 96 MiB by default); use endpoint pagination or narrow the request. After cancellation or a lost reply, inspect state before retrying a write.
 
 ## Settings say access is unavailable
 
-The settings host must support the Core-owned access adapter. Update to a compatible UI/Core pair if it reports that Core-owned mod access is unsupported.
+The settings host must support the Core-owned access adapter, independent management/API agent lists, and shared draft protection. An invalid access response can indicate a Core still returning the legacy shared list; a shared-draft update message indicates missing `setDraft`, `navigate` or `confirm` support. Update to a compatible UI/Core pair if it reports that Core-owned mod access is unsupported.
 
 On Core builds containing the mod-access authentication fix, use a verified operator login when authentication is enabled. With `authMode: none`, direct UI access does not require a separate login. API tokens are still rejected for the access-settings route.
 

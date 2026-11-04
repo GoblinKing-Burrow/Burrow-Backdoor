@@ -1,5 +1,9 @@
 # Sources and development
 
+## Ordinary maintenance — 4 November 2026
+
+Compared Backdoor `939a5969c01242eb5bdb5f953213a67cc682abac` and Core `b62c57ef5e831bacebf2214a31c04147471c1267` with the previous ordinary baseline. The 35 registered tool names and input schemas are unchanged. Settings and Core authority now separate `modManagementAgentIds` from `coreApiAgentIds`, in addition to `diagnosticAgentIds`. Guides reflect the complete-replacement API, one-time legacy migration, independent selection, shared draft protection and responsive Admin Access groups. No runtime tests, access changes or release operations were performed; unchanged guidance retains its dated full review.
+
 ## Full reconciliation — 1 November 2026
 
 All eleven Backdoor guides were checked against mod `b03239d3cae16a5b6f7cfd5174cf7bb88cdff01a` and Core `8b5889115680bcdbf698f1b93126254e1cf4d2e6`: all 35 registered tool schemas, native peer discovery/A2A separation, access settings, scoped diagnostics, durable management receipts and full API request/response boundaries. The response-size error guidance now names the implemented default allocation ceiling. This is static implementation reconciliation, not live application or provider execution. Public packages may lag these source pins.
@@ -39,7 +43,7 @@ Install the compatible Core checkout’s dependencies first. `BURROW_CORE_ROOT` 
 
 The focused `core-api.test.mjs` and `request-boundaries.test.mjs` checks use mock Core facades. `mod-integration.test.mjs` loads the actual selected Core host and uses mock diagnostic/management/API services to test schemas, capability exposure, caller authority and revocation. These checks do **not** establish that every live tool or API route was exercised. Report the actual command, target, pass/fail and skips instead of claiming complete live coverage.
 
-Documentation checks:
+Documentation checks for the original Backdoor repository’s standalone MkDocs site:
 
 ```sh
 python -m pip install -r requirements-docs.txt
@@ -47,7 +51,7 @@ python -m mkdocs build --strict
 python scripts/docs/check_site.py site
 ```
 
-The public site uses MkDocs Material. Documentation CI builds and checks links before deployment. The source and [license](https://github.com/GoblinKing-Burrow/Burrow-Backdoor/blob/main/LICENSE) are available in the public repository.
+That standalone site uses MkDocs Material. This shared site uses Docusaurus; see [Build this documentation](https://docs.goblin-kingdom.com/burrow/development/documentation/) for setup and deployment. Documentation CI builds and checks links before deployment. The source and [license](https://github.com/GoblinKing-Burrow/Burrow-Backdoor/blob/main/LICENSE) are available in the public repository.
 
 ## Historical review checkpoint: 21 October 2026
 
@@ -58,4 +62,3 @@ The original guides named the release line but did not pin every page to a commi
 ### Historical public-snapshot test limitation
 
 The 2026.10.19 public snapshot includes `test/development-release-workflow.test.mjs` but excludes the development release workflow it reads. The aggregate `npm run check` therefore fails with a missing workflow file even when the mod's focused tests pass. Report that separately from runtime behavior. Core integration additionally requires the compatible Core checkout and dependencies described above; skipped integration cases do not establish compatibility.
-

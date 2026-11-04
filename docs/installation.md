@@ -2,7 +2,7 @@
 
 ## Requirements
 
-Use a compatible Burrow Core that recognizes both `mod-management-v1` and `core-api-v1` and provides the Core-owned mod access settings adapter. An older Core that rejects the new capability cannot load this manifest. A compatible Core can load Backdoor without either grant; the API tool then explicitly reports `core_api_unavailable` if Core does not expose it. Keep Core and Backdoor on compatible releases.
+Use a compatible Burrow Core that recognizes both `mod-management-v1` and `core-api-v1` and provides the Core-owned mod access settings adapter. An older Core that rejects the new capability cannot load this manifest. A compatible Core can load Backdoor without either grant; the API tool then explicitly reports `core_api_unavailable` if Core does not expose it. Keep Core and Backdoor on compatible releases. Current Settings also requires independent management/API agent-list support and the shared draft APIs (`setDraft`, `navigate`, `confirm`). The form-wide Admin Access layout requires a compatible UI host.
 
 On Core builds containing the mod-access authentication fix, the access settings follow Core’s configured authentication mode: a verified operator login is required when authentication is enabled; with `authMode: none`, direct UI access does not require a separate login. API tokens still cannot authorize this operator route. Older Core builds reject access with authentication disabled; see [settings troubleshooting](troubleshooting.md#settings-say-access-is-unavailable).
 
@@ -12,8 +12,8 @@ On Core builds containing the mod-access authentication fix, the access settings
 2. Add `https://github.com/GoblinKing-Burrow/Burrow-Backdoor` as a mod source.
 3. Refresh the source and install **Burrow Backdoor**.
 4. Explicitly enable the mod. A fresh installation remains disabled until enabled.
-5. Open **Settings → Backdoor** to choose access. Ordinary agents can use their own diagnostics without assignment to either list.
-6. For mod lifecycle administration, open **Admin Access**, approve **mod management**, choose the administrative agents, and save. For full API reads and writes, separately approve **full Core API access** for that same admin list only after reviewing [security and trust](security.md). Existing management approval does not grant API access. Restart Core when the panel reports that a newly granted host capability requires it.
+5. Open **Settings → Backdoor** to choose access. Ordinary agents can use their own diagnostics without assignment to any access list.
+6. For mod lifecycle administration, open **Admin Access**, approve **mod management**, choose agents in its list, and save. For full API reads and writes, separately approve **full Core API access** and select agents in its independent list only after reviewing [security and trust](security.md). Existing management approval does not grant API access. Restart Core when the panel reports that a newly granted host capability requires it.
 7. For cross-agent diagnostics, separately choose agents under **Global Access** and save.
 
 ## Verify

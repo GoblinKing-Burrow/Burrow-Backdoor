@@ -6,7 +6,7 @@ This is the Core-owned settings contract used by Backdoor’s operator UI. Agent
 
 `GET /api/operator/mods/burrow-backdoor/access`
 
-Returns `grants`, `adminAgentIds`, `diagnosticAgentIds`, `declaredCapabilities`, and `restartRequired`. The first four fields are arrays of unique nonempty strings; `restartRequired` is boolean.
+Returns `grants`, `diagnosticAgentIds`, `modManagementAgentIds`, `coreApiAgentIds`, `declaredCapabilities`, and `restartRequired`. The first five fields are arrays of unique nonempty strings; `restartRequired` is boolean.
 
 ## Replace access
 
@@ -17,12 +17,13 @@ The JSON body is a complete replacement of the writable authority fields:
 ```json
 {
   "grants": ["mod-management-v1", "core-api-v1"],
-  "adminAgentIds": ["your-admin-agent-id"],
+  "modManagementAgentIds": ["your-management-agent-id"],
+  "coreApiAgentIds": ["your-api-agent-id"],
   "diagnosticAgentIds": ["your-diagnostic-agent-id"]
 }
 ```
 
-This illustration approves **both** independent capabilities; omit `core-api-v1` unless the admin list should have unrestricted Core API reads/writes. `mod-management-v1` alone still authorizes only the eight management tools. Both capabilities use the existing `adminAgentIds` list; there is no per-tool grant. It is not a command to overwrite your configuration. Preserve unrelated grants and the other panel’s assignment list. Refresh the current record immediately before saving. Concurrent saves are last-writer-wins, not a merge protocol.
+This illustration approves **both** independent capabilities; omit `core-api-v1` unless the Core API list should have unrestricted Core API reads/writes. `mod-management-v1` alone still authorizes only the eight management tools. Each capability has an independent agent list; there is no per-tool grant. All four writable arrays are required. Legacy `adminAgentIds` payloads are rejected. A one-time Core database migration copies previously shared assignments into both new lists to preserve existing access; subsequent updates have no shared-list fallback. It is not a command to overwrite your configuration. Preserve unrelated grants and the other panel’s assignment list. Refresh the current record immediately before saving. Concurrent saves are last-writer-wins, not a merge protocol.
 
 On Core builds containing the mod-access authentication fix, these routes follow Core’s operator-action contract:
 

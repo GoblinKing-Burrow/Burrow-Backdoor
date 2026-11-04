@@ -29,13 +29,15 @@ test('actual Core loads Backdoor with caller-scoped diagnostics and independentl
   for (const entry of ['burrow.mod.json', 'src', 'ui']) await cp(new URL(`../${entry}`, import.meta.url), path.join(modRoot, entry), { recursive: true });
   const settings = new Map([['unrelated', { preserved: true }]]);
   const diagnosticAgentIds = ['diagnostic'];
-  const adminAgentIds = ['admin'];
+  const modManagementAgentIds = ['admin', 'manager'];
+  const coreApiAgentIds = ['admin', 'api-only'];
+  const assigned = (capability, agentId) => (capability === 'mod-management-v1' ? modManagementAgentIds : capability === 'core-api-v1' ? coreApiAgentIds : []).includes(agentId);
   const grants = ['mod-management-v1', 'core-api-v1'];
   const modAuthority = {
-    read: async () => ({ grants, adminAgentIds, diagnosticAgentIds }),
-    allowed: async (_modId, capability, agentId) => capability === 'diagnostics-global' ? diagnosticAgentIds.includes(agentId) : grants.includes(capability) && adminAgentIds.includes(agentId),
+    read: async () => ({ grants, modManagementAgentIds, coreApiAgentIds, diagnosticAgentIds }),
+    allowed: async (_modId, capability, agentId) => capability === 'diagnostics-global' ? diagnosticAgentIds.includes(agentId) : grants.includes(capability) && assigned(capability, agentId),
     assertAllowed: async (_modId, capability, agentId) => {
-      if (grants.includes(capability) && adminAgentIds.includes(agentId)) return;
+      if (grants.includes(capability) && assigned(capability, agentId)) return;
       throw new Error('mod_authority_forbidden');
     },
   };
@@ -112,6 +114,15 @@ test('actual Core loads Backdoor with caller-scoped diagnostics and independentl
 
   await assert.rejects(mod.host.invokeTool('burrow_mod_management_inventory', {}, { agentId: 'diagnostic', sessionId: 'own' }), /mod_route_failed/);
   assert.equal(managementCalls.length, 0);
+  assert.equal((await mod.host.invokeTool('burrow_mod_management_inventory', {}, { agentId: 'manager' })).ok, true);
+  assert.equal(managementCalls.length, 1);
+  managementCalls.length = 0;
+  await assert.rejects(mod.host.invokeTool('burrow_api_request', { path: '/api/health' }, { agentId: 'manager' }), /mod_route_failed/);
+  assert.equal(apiCalls.length, 0, 'management assignment does not grant Core API access');
+  await assert.rejects(mod.host.invokeTool('burrow_mod_management_inventory', {}, { agentId: 'api-only' }), /mod_route_failed/);
+  assert.equal(managementCalls.length, 0, 'Core API assignment does not grant management tools');
+  assert.deepEqual(await mod.host.invokeTool('burrow_api_request', { path: '/api/health' }, { agentId: 'api-only' }), apiResult);
+  apiCalls.length = 0;
   const actor = { agentId: 'admin', sessionId: 'session', conversationId: 'conversation', runId: 'run' };
   for (const agentId of ['one', 'diagnostic']) {
     await assert.rejects(mod.host.invokeTool('burrow_api_request', { path: '/api/openapi.json' }, { agentId }), /mod_route_failed/);
@@ -144,10 +155,10 @@ test('actual Core loads Backdoor with caller-scoped diagnostics and independentl
   await assert.rejects(mod.host.invokeTool('burrow_api_request', { path: '/api/health' }, actor), /mod_route_failed/);
   assert.equal(apiCalls.length, admitted, 'revocation is checked on the next Core admission');
   grants.push('core-api-v1');
-  adminAgentIds.splice(0, 1);
+  coreApiAgentIds.splice(0, 1);
   await assert.rejects(mod.host.invokeTool('burrow_api_request', { path: '/api/health' }, actor), /mod_route_failed/);
   assert.equal(apiCalls.length, admitted, 'assignment revocation is independent of the capability grant');
-  adminAgentIds.push('admin');
+  coreApiAgentIds.push('admin');
   assert.equal((await mod.host.invokeTool('burrow_mod_management_inventory', {}, actor)).ok, true);
   const accepted = [];
   for (const [tool, input] of [
@@ -205,7 +216,7 @@ for (const grants of [[], ['mod-management-v1'], ['core-api-v1']]) {
       modManagement: managementFixture(managementCalls),
       coreApi: { request: async (input, options) => (apiCalls.push({ input, options }), apiResult) },
       modAuthority: {
-        read: async () => ({ grants, adminAgentIds: ['admin'], diagnosticAgentIds: [] }),
+        read: async () => ({ grants, modManagementAgentIds: ['admin'], coreApiAgentIds: ['admin'], diagnosticAgentIds: [] }),
         allowed: async (_modId, capability, agentId) => grants.includes(capability) && agentId === 'admin',
         assertAllowed: async (_modId, capability, agentId) => {
           if (!grants.includes(capability) || agentId !== 'admin') throw Error('mod_authority_forbidden');

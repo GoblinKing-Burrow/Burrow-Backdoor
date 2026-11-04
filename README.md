@@ -25,7 +25,7 @@ Backdoor requires a Core version that recognizes both declared system capabiliti
 
 ## Access model
 
-Core owns Backdoor's capability grants and two independent operator-managed access lists. Backdoor neither persists nor mutates this authority in mod settings.
+Core owns Backdoor's capability grants and three independent operator-managed access lists. Backdoor neither persists nor mutates this authority in mod settings.
 
 ### Global diagnostic access
 
@@ -33,9 +33,11 @@ Every agent can inspect its own sessions, runs, traces, context, saved-memory me
 
 ### Burrow administrative access
 
-Only agents in Core's `adminAgentIds` assignment can use the eight mod-management tools, and only while Core has granted Backdoor `mod-management-v1`. The same admin list gates `burrow_api_request`, but it additionally requires the separate, explicitly approved `core-api-v1` capability. Existing mod-management approval does **not** grant full API access. Core checks the effective capability, its current authority record, and the trusted active caller on every request; model arguments cannot supply authority.
+Only agents in Core's `modManagementAgentIds` assignment can use the eight mod-management tools, and only while Core has granted Backdoor `mod-management-v1`. The independent `coreApiAgentIds` assignment gates `burrow_api_request` and requires the separate, explicitly approved `core-api-v1` capability. Existing mod-management approval does **not** grant full API access. Core checks the effective capability, its current authority record, and the trusted active caller on every request; model arguments cannot supply authority.
 
 Diagnostic global access does not imply administration, and administration does not add global scope to the diagnostic tools. **Full API access is much broader than diagnostics:** an API administrator can read private cross-agent data and perform any writes exposed by Core's API. Grant it only to agents trusted with that power and the privacy responsibility it brings.
+
+Settings uses Burrow's shared form layouts and compact, scrollable agent checkboxes. Global Access is a single form. Admin Access places the independent Mod management and Core API access groups side by side on wide screens and stacks them on narrow screens. Each panel retains one explicit Save for its assignments and capability approvals. Pending changes use the host's Save/Discard/Stay guard; failed saves retain the draft. A host providing `setDraft`, `navigate`, and `confirm` is required; older hosts show an update message instead of an unguarded editor.
 
 The Settings panels use Core's authenticated `GET` / `PUT /api/operator/mods/burrow-backdoor/access` contract. PUT is a complete replacement, so each panel refreshes immediately before saving and preserves the other panel's assignments and unrelated grants. Newly granted host capabilities require a Core restart; revocations are checked at Core admission. Internal agent tool calls do not depend on browser cookies, Basic Auth, OIDC, bearer tokens, or the selected Node Goblin target.
 
@@ -101,7 +103,7 @@ Internal dispatch does not use browser cookies, login sessions or API tokens. It
 ## Security boundary
 
 - Core supplies caller agent/session/conversation/run identity; tool arguments cannot impersonate it.
-- Core-owned diagnostic `diagnosticAgentIds` and administrative `adminAgentIds` assignments are separate.
+- Core-owned `diagnosticAgentIds`, `modManagementAgentIds`, and `coreApiAgentIds` assignments are separate. Each administrative capability has its own approval and agent list.
 - Diagnostic tools use `context.runtimeDiagnostics.read`; lifecycle tools use `context.modManagement`; the full API tool uses `context.coreApi.request(input, { signal: caller.signal })` only when Core exposes that effective capability.
 - Lifecycle work reuses Core's mod-distribution validation, recovery journals, source authentication, transitions, and persisted operation records.
 - There is no raw controller filesystem/process, database or arbitrary-network facade. Full API responses are nevertheless not sanitized and can expose sensitive data or configuration that the requested endpoint returns; endpoint actions can launch work or affect integrations.
@@ -127,3 +129,4 @@ The mod manifest is `burrow.mod.json`; the server entry is `src/mod.mjs`; the op
 The settings host must inject Backdoor's Core-owned access adapter rather than route these requests through the mod-owned `/api/mods/:modId/*` namespace. This preserves normal local operator authentication and keeps arbitrary Core API access out of the mod settings contract.
 
 NightShaman `main` runs the focused Backdoor/Core contract gate, assigns the next UTC calendar revision, and publishes a tagged development package so the current mod can be installed and tested immediately. The coordinated daily Burrow promotion separately freezes Backdoor with its compatible Core revision, runs the complete Backdoor/Core checks, stamps the public UTC `YYYY.MM.DD` version, and publishes the allowlisted snapshot and release to `GoblinKing-Burrow/Burrow-Backdoor`. Changes after that day's public release wait for the next UTC day.
+

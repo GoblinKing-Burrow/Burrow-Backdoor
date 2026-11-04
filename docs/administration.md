@@ -1,7 +1,8 @@
 # Manage mods
 
 !!! danger "Administrative tools change the home Burrow"
-    These eight tools can change installed code and availability. An assigned administrator with the approved `mod-management-v1` capability can invoke them; the separate full API grant is not needed. Backdoor does not add a separate per-call confirmation dialog. Follow your own operator instructions and review the intended target and action before submitting.
+    These eight tools can change installed code and availability. An agent in Core’s `modManagementAgentIds` list with the approved `mod-management-v1` capability can invoke them; the separate full API grant is not needed. Backdoor does not add a separate per-call confirmation dialog. Follow your own operator instructions and review the intended target and action before submitting.
+
 
 ## Before changing anything
 

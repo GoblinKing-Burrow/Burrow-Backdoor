@@ -3,10 +3,11 @@
 !!! danger "Choose administrative agents and grants deliberately"
     Mod administration changes executable code and service availability. Full Core API access additionally permits every API read and write, including private data, settings changes and deletion. Global diagnostics widens diagnostic scope. Select trusted agents, approve the two administrative capabilities separately, and keep access as small as your workflow needs.
 
+
 ## Boundaries Core enforces
 
 - The trusted caller comes from Core, not `agentId`, a header or other model-supplied arguments. Admission requires an active invocation.
-- Diagnostic scope and administrative authority are independently Core-owned. Full API uses the existing `adminAgentIds` list plus the explicitly granted `core-api-v1` capability. Existing `mod-management-v1` approval is not API approval.
+- Diagnostic scope and administrative authority are independently Core-owned. Mod management uses `modManagementAgentIds` plus `mod-management-v1`. Full API uses the independent `coreApiAgentIds` list plus the explicitly granted `core-api-v1` capability. Existing `mod-management-v1` approval is not API approval.
 - Backdoor declares both capabilities; system status alone grants neither. There is no per-tool or per-endpoint grant.
 - Diagnostic reads use `context.runtimeDiagnostics.read`; durable management uses `context.modManagement`. Only an effective API capability exposes `context.coreApi.request` to the host.
 - Full API dispatch calls the same home-Core request handler as HTTP, in process. It is not a loopback listener, browser session, token login or a copied route implementation.
