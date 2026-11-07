@@ -62,3 +62,8 @@ The original guides named the release line but did not pin every page to a commi
 ### Historical public-snapshot test limitation
 
 The 2026.10.19 public snapshot includes `test/development-release-workflow.test.mjs` but excludes the development release workflow it reads. The aggregate `npm run check` therefore fails with a missing workflow file even when the mod's focused tests pass. Report that separately from runtime behavior. Core integration additionally requires the compatible Core checkout and dependencies described above; skipped integration cases do not establish compatibility.
+
+
+## 7 November 2026 Settings delta
+
+Static review at `ca08786012520ee58380c501999d7c75a4dbdc92` confirms separate Global Access, Admin Access and Core API Access forms, each with its own Save. The Settings implementation and test definitions preserve the other scopes on refresh-before-save. Tool names and access boundaries are unchanged. No application tests or access changes were performed.

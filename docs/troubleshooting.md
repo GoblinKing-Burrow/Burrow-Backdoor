@@ -10,7 +10,7 @@ That is the default boundary. Assign the caller in **Global Access** only if cro
 
 ## Administration is forbidden
 
-Confirm the calling agent is selected in the matching **Admin Access** group and its capability is checked: **mod management** for the eight durable management tools, or **full Core API access** for `burrow_api_request`. Both the approvals and their `modManagementAgentIds` / `coreApiAgentIds` assignments are independent; global diagnostics never grants either. Follow any Core restart notice after a new capability grant. Core also rechecks authority immediately before queued work starts; access revoked after submission can make an operation fail.
+Confirm the calling agent is selected in the matching section and its capability is checked: **Admin Access → Mod management** for the eight durable management tools, or **Core API Access → full Core API access** for `burrow_api_request`. Both the approvals and their `modManagementAgentIds` / `coreApiAgentIds` assignments are independent; global diagnostics never grants either. Follow any Core restart notice after a new capability grant. Core also rechecks authority immediately before queued work starts; access revoked after submission can make an operation fail.
 
 ## Full API reports core_api_unavailable
 
@@ -56,3 +56,4 @@ A session tail is not full history. Trace output is omitted by default. Context 
 ## Report a problem
 
 Include Core/Backdoor versions, the tool name, sanitized arguments, the error code, and whether the operation reached a terminal state. Review session/trace previews and actor identifiers before posting. Use the [public issue tracker](https://github.com/GoblinKing-Burrow/Burrow-Backdoor/issues).
+

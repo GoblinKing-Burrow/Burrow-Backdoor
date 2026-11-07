@@ -92,10 +92,11 @@ function copy(root) {
   return root.descendants().map(node => node.textContent).join(' ');
 }
 
-test('exposes separate Global Access and Admin Access settings menu items', () => {
+test('exposes separate Global, Admin and Core API Access settings menu items', () => {
   assert.deepEqual(settingsSections, [
     { id: 'global-access', label: 'Global Access', layout: 'form' },
-    { id: 'admin-access', label: 'Admin Access', layout: 'form-wide' },
+    { id: 'admin-access', label: 'Admin Access', layout: 'form' },
+    { id: 'core-api-access', label: 'Core API Access', layout: 'form' },
   ]);
 });
 
@@ -109,11 +110,11 @@ test('global panel renders only Core diagnostic assignments', async () => fixtur
 
 test('admin panel renders assignments and explicit declared capability approval', async () => fixture({ section: 'admin-access' }, async ({ root }) => {
   assert.deepEqual(agentInputs(root, 'modManagementAgentIds').map(input => [input.value, input.checked]), [['agent-a', true], ['agent-b', false]]);
-  assert.deepEqual(agentInputs(root, 'coreApiAgentIds').map(input => [input.value, input.checked]), [['agent-a', false], ['agent-b', true]]);
+  assert.equal(root.descendants().some(node => node['aria-label'] === 'Agents with Core API access'), false);
   assert.equal(capabilityInput(root).checked, true);
   assert.match(copy(root), /Approve Backdoor mod management/);
-  assert.equal(capabilityInput(root, 1).checked, false);
-  assert.match(copy(root), /Approve Backdoor Core API access/);
+  assert.equal(inputs(root).filter(input => !input.value).length, 1);
+  assert.doesNotMatch(copy(root), /Approve Backdoor Core API access/);
   assert.match(copy(root), /does not grant or imply global diagnostic access/);
 }));
 
@@ -199,11 +200,11 @@ test('fails clearly when the UI host does not provide Core-owned access', async 
 }));
 
 
-test('admin save independently approves Core API and preserves refreshed unknown grants and diagnostics', async () => fixture({
-  section: 'admin-access',
+test('Core API save independently approves Core API and preserves refreshed unknown grants and diagnostics', async () => fixture({
+  section: 'core-api-access',
   refreshedAccess: { ...defaultAccess, grants: ['mod-management-v1', 'future-capability-v1'], diagnosticAgentIds: ['agent-a'] },
 }, async ({ root, calls }) => {
-  capabilityInput(root, 1).checked = true;
+  capabilityInput(root).checked = true;
   await root.fire('submit');
   await flush();
   assert.equal(calls.length, 3);
@@ -216,13 +217,13 @@ test('admin save independently approves Core API and preserves refreshed unknown
 
 test('undeclared capability is not offered and an existing grant is preserved', async () => fixture({
   section: 'admin-access',
-  access: { ...defaultAccess, grants: ['core-api-v1'], declaredCapabilities: ['mod-management-v1'] },
+  access: { ...defaultAccess, grants: ['core-api-v1'], declaredCapabilities: [] },
 }, async ({ root, calls }) => {
-  assert.match(copy(root), /does not currently declare core-api-v1/);
-  assert.equal(inputs(root).filter(input => !input.value).length, 1);
-  capabilityInput(root).checked = true;
+  assert.match(copy(root), /does not currently declare mod-management-v1/);
+  assert.equal(inputs(root).filter(input => !input.value).length, 0);
+  agentInputs(root, 'modManagementAgentIds')[1].checked = true;
   await root.fire('submit');
-  assert.deepEqual(JSON.parse(calls.at(-1).body).grants, ['core-api-v1', 'mod-management-v1']);
+  assert.deepEqual(JSON.parse(calls.at(-1).body).grants, ['core-api-v1']);
 }));
 
 
@@ -343,55 +344,43 @@ for (const key of ['modManagementAgentIds', 'coreApiAgentIds']) {
   }
 }
 
-test('admin save gives Hatchet both capabilities and Smatchet management only', async () => fixture({
-  section: 'admin-access',
-  agents: [{ id: 'hatchet', name: 'Hatchet' }, { id: 'smatchet', name: 'Smatchet' }],
-  access: { ...defaultAccess, grants: [], modManagementAgentIds: [], coreApiAgentIds: [] },
-}, async ({ root, calls }) => {
-  capabilityInput(root).checked = true;
-  capabilityInput(root, 1).checked = true;
-  for (const input of agentInputs(root, 'modManagementAgentIds')) input.checked = true;
-  agentInputs(root, 'coreApiAgentIds')[0].checked = true;
-  await root.fire('submit');
-  assert.deepEqual(JSON.parse(calls.at(-1).body), {
-    grants: ['mod-management-v1', 'core-api-v1'],
-    diagnosticAgentIds: ['agent-b'],
-    modManagementAgentIds: ['hatchet', 'smatchet'],
-    coreApiAgentIds: ['hatchet'],
-  });
-}));
 
-test('admin lists preserve and remove unavailable assignments independently', async () => fixture({
-  section: 'admin-access',
-  access: { ...defaultAccess, modManagementAgentIds: ['missing-manager'], coreApiAgentIds: ['missing-api'] },
-}, async ({ root, calls }) => {
-  const management = agentInputs(root, 'modManagementAgentIds').find(input => input.value === 'missing-manager');
-  const api = agentInputs(root, 'coreApiAgentIds').find(input => input.value === 'missing-api');
-  assert.equal(management.checked, true);
-  assert.equal(api.checked, true);
-  assert.equal(agentInputs(root, 'coreApiAgentIds').some(input => input.value === 'missing-manager'), false);
-  management.checked = false;
-  await root.fire('submit');
-  const body = JSON.parse(calls.at(-1).body);
-  assert.deepEqual(body.modManagementAgentIds, []);
-  assert.deepEqual(body.coreApiAgentIds, ['missing-api']);
-}));
-
-test('empty admin lists keep agents and independent approvals visible', async () => fixture({
-  section: 'admin-access',
-  access: { ...defaultAccess, modManagementAgentIds: [], coreApiAgentIds: [] },
-  agents: [],
-}, async ({ root }) => {
-  assert.equal(inputs(root).length, 2);
-  assert.equal(copy(root).split('No agents are available.').length - 1, 2);
-}));
-
-test('admin assignment groups share a responsive pair and one save scope', async () => {
-  await fixture({ section: 'admin-access' }, async ({ root }) => {
-    const pair = root.descendants().find(node => node.className === 'settings-section-pair');
-    assert.ok(pair);
-    assert.deepEqual(pair.children.map(node => node['aria-label']), ['Mod management', 'Core API access']);
-    assert.equal(root.descendants().filter(node => node.tagName === 'button' && node.type === 'submit').length, 1);
-    assert.ok(!pair.descendants().some(node => node.tagName === 'button'));
-  });
-});
+for (const [section, key, grant, otherKey] of [
+  ['admin-access', 'modManagementAgentIds', 'mod-management-v1', 'coreApiAgentIds'],
+  ['core-api-access', 'coreApiAgentIds', 'core-api-v1', 'modManagementAgentIds'],
+]) {
+  test(`${section} exposes only its own controls and preserves the other scope on save`, async () => fixture({
+    section, refreshedAccess: { ...defaultAccess, [otherKey]: ['concurrent-agent'], grants: ['future-v1'] },
+  }, async ({ root, calls }) => {
+    assert.equal(inputs(root).filter(input => !input.value).length, 1);
+    assert.equal(root.descendants().filter(node => node.role === 'group').length, 1);
+    assert.equal(root.descendants().some(node => node.className === 'settings-section-pair'), false);
+    capabilityInput(root).checked = true;
+    agentInputs(root, key)[0].checked = true;
+    agentInputs(root, key)[1].checked = true;
+    await root.fire('submit');
+    const payload = JSON.parse(calls.at(-1).body);
+    assert.deepEqual(payload[key], ['agent-a', 'agent-b']);
+    assert.deepEqual(payload[otherKey], ['concurrent-agent']);
+    assert.deepEqual(payload.grants, ['future-v1', grant]);
+    assert.deepEqual(payload.diagnosticAgentIds, defaultAccess.diagnosticAgentIds);
+  }));
+  test(`${section} preserves and removes unavailable assignments independently`, async () => fixture({
+    section, access: { ...defaultAccess, [key]: ['missing-active'], [otherKey]: ['missing-other'] },
+  }, async ({ root, calls }) => {
+    const stale = agentInputs(root, key).find(input => input.value === 'missing-active');
+    assert.equal(stale.checked, true);
+    assert.equal(agentInputs(root, key).some(input => input.value === 'missing-other'), false);
+    stale.checked = false;
+    await root.fire('submit');
+    const body = JSON.parse(calls.at(-1).body);
+    assert.deepEqual(body[key], []);
+    assert.deepEqual(body[otherKey], ['missing-other']);
+  }));
+  test(`${section} empty catalog keeps its one approval visible`, async () => fixture({
+    section, agents: [], access: { ...defaultAccess, [key]: [] },
+  }, async ({ root }) => {
+    assert.equal(inputs(root).length, 1);
+    assert.equal(copy(root).split('No agents are available.').length - 1, 1);
+  }));
+}

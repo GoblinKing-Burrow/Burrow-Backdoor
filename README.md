@@ -16,7 +16,7 @@ Backdoor is a **system mod** because it requests a privileged Core application i
 2. Add the Backdoor repository as a mod source.
 3. Refresh the source and install **Burrow Backdoor**.
 4. Explicitly enable the mod. Newly installed mods remain disabled by design.
-5. Open **Settings → Backdoor → Admin Access** and assign administrative agents deliberately. Approve **mod management** for the eight lifecycle tools; separately approve **full Core API access** only if these agents should have powerful access to all API reads and writes. Use **Global Access** separately for cross-agent diagnostics.
+5. Open **Settings → Backdoor → Admin Access** and assign administrative agents deliberately. Approve **mod management** for the eight lifecycle tools; separately open **Settings → Backdoor → Core API Access** and approve **full Core API access** only if these agents should have powerful access to all API reads and writes. Use **Global Access** separately for cross-agent diagnostics.
 6. Restart Core when instructed after granting a new host capability.
 
 Once enabled, Burrow registers **Mod: Backdoor** with 26 diagnostic tools, 8 durable mod-management tools, and `burrow_api_request` (**35 total**). They are globally discoverable mod-authorized tools, but Core still authorizes every call from its trusted caller identity.
@@ -37,9 +37,9 @@ Only agents in Core's `modManagementAgentIds` assignment can use the eight mod-m
 
 Diagnostic global access does not imply administration, and administration does not add global scope to the diagnostic tools. **Full API access is much broader than diagnostics:** an API administrator can read private cross-agent data and perform any writes exposed by Core's API. Grant it only to agents trusted with that power and the privacy responsibility it brings.
 
-Settings uses Burrow's shared form layouts and compact, scrollable agent checkboxes. Global Access is a single form. Admin Access places the independent Mod management and Core API access groups side by side on wide screens and stacks them on narrow screens. Each panel retains one explicit Save for its assignments and capability approvals. Pending changes use the host's Save/Discard/Stay guard; failed saves retain the draft. A host providing `setDraft`, `navigate`, and `confirm` is required; older hosts show an update message instead of an unguarded editor.
+Settings uses Burrow's shared form layouts and compact, scrollable agent checkboxes. Global Access is a single form. Admin Access and Core API Access are separate single forms, each using the same desktop divider as Global Access. Each panel retains one explicit Save for its assignments and capability approvals. Pending changes use the host's Save/Discard/Stay guard; failed saves retain the draft. A host providing `setDraft`, `navigate`, and `confirm` is required; older hosts show an update message instead of an unguarded editor.
 
-The Settings panels use Core's authenticated `GET` / `PUT /api/operator/mods/burrow-backdoor/access` contract. PUT is a complete replacement, so each panel refreshes immediately before saving and preserves the other panel's assignments and unrelated grants. Newly granted host capabilities require a Core restart; revocations are checked at Core admission. Internal agent tool calls do not depend on browser cookies, Basic Auth, OIDC, bearer tokens, or the selected Node Goblin target.
+The Settings panels use Core's authenticated `GET` / `PUT /api/operator/mods/burrow-backdoor/access` contract. PUT is a complete replacement, so each panel refreshes immediately before saving and preserves the other panels’ assignments and unrelated grants. Newly granted host capabilities require a Core restart; revocations are checked at Core admission. Internal agent tool calls do not depend on browser cookies, Basic Auth, OIDC, bearer tokens, or the selected Node Goblin target.
 
 ## Diagnostic tools
 

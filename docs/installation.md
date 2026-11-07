@@ -2,7 +2,7 @@
 
 ## Requirements
 
-Use a compatible Burrow Core that recognizes both `mod-management-v1` and `core-api-v1` and provides the Core-owned mod access settings adapter. An older Core that rejects the new capability cannot load this manifest. A compatible Core can load Backdoor without either grant; the API tool then explicitly reports `core_api_unavailable` if Core does not expose it. Keep Core and Backdoor on compatible releases. Current Settings also requires independent management/API agent-list support and the shared draft APIs (`setDraft`, `navigate`, `confirm`). The form-wide Admin Access layout requires a compatible UI host.
+Use a compatible Burrow Core that recognizes both `mod-management-v1` and `core-api-v1` and provides the Core-owned mod access settings adapter. An older Core that rejects the new capability cannot load this manifest. A compatible Core can load Backdoor without either grant; the API tool then explicitly reports `core_api_unavailable` if Core does not expose it. Keep Core and Backdoor on compatible releases. Current Settings also requires independent management/API agent-list support and the shared draft APIs (`setDraft`, `navigate`, `confirm`). Global Access, Admin Access and Core API Access are separate single-form Settings sections.
 
 On Core builds containing the mod-access authentication fix, the access settings follow Core’s configured authentication mode: a verified operator login is required when authentication is enabled; with `authMode: none`, direct UI access does not require a separate login. API tokens still cannot authorize this operator route. Older Core builds reject access with authentication disabled; see [settings troubleshooting](troubleshooting.md#settings-say-access-is-unavailable).
 
@@ -13,7 +13,7 @@ On Core builds containing the mod-access authentication fix, the access settings
 3. Refresh the source and install **Burrow Backdoor**.
 4. Explicitly enable the mod. A fresh installation remains disabled until enabled.
 5. Open **Settings → Backdoor** to choose access. Ordinary agents can use their own diagnostics without assignment to any access list.
-6. For mod lifecycle administration, open **Admin Access**, approve **mod management**, choose agents in its list, and save. For full API reads and writes, separately approve **full Core API access** and select agents in its independent list only after reviewing [security and trust](security.md). Existing management approval does not grant API access. Restart Core when the panel reports that a newly granted host capability requires it.
+6. For mod lifecycle administration, open **Admin Access**, approve **mod management**, choose agents in its list, and save. For full API reads and writes, open **Core API Access**, separately approve **full Core API access** and select agents in its independent list only after reviewing [security and trust](security.md). Existing management approval does not grant API access. Restart Core when the panel reports that a newly granted host capability requires it.
 7. For cross-agent diagnostics, separately choose agents under **Global Access** and save.
 
 ## Verify
@@ -33,3 +33,4 @@ Use normal **Settings → Mods** update, disable, and uninstall actions, or use 
 On compatible Core and mod builds that declare managed skills, loading this mod automatically supplies the `burrow-backdoor` skill from [Burrow-Skills](https://github.com/GoblinKing-Burrow/Burrow-Skills/tree/main/burrow-backdoor). Core maintains the installed copy as read-only and refreshes managed skills at startup, on mod lifecycle changes, and on its default six-hour schedule. You do not paste, edit, or assign that managed copy manually. The skill provides instructions; it does not grant tool or data access.
 
 The current mod manifest declares this managed skill. Automatic mod-managed delivery still requires a Core build that supports it. Older public **2026.10.19** snapshots lack the declaration; updating only the skill repository cannot add the missing integration to those older packages. See [how managed skills work](https://docs.goblin-kingdom.com/burrow-skills/managed-skills/).
+
