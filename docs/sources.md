@@ -67,3 +67,7 @@ The 2026.10.19 public snapshot includes `test/development-release-workflow.test.
 ## 7 November 2026 Settings delta
 
 Static review at `ca08786012520ee58380c501999d7c75a4dbdc92` confirms separate Global Access, Admin Access and Core API Access forms, each with its own Save. The Settings implementation and test definitions preserve the other scopes on refresh-before-save. Tool names and access boundaries are unchanged. No application tests or access changes were performed.
+
+## 8 November 2026 full documentation reconciliation
+
+All eleven guides were statically compared with the 35 registered tool schemas, three access forms, current Core authority/diagnostic/management/API contracts and checked-in boundary tests. No tool or capability changes were needed. Reviewed source `30b183a9e8b38b9cea4cef9c308fa39fe759e941` against Core assembly `1f77c9d0277585bfe1963ce3ab3d2cdf35f16b9a`. No application tests, live chat/provider calls, paid generation, runtime edits or skill scripts were run. Documentation checks are separate from application acceptance.
