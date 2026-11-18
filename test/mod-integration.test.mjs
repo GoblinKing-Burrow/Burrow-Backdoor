@@ -76,7 +76,7 @@ test('actual Core loads Backdoor with caller-scoped diagnostics and independentl
   assert.equal(mod.manifest.contributions.settings[0].primary.title, 'Backdoor');
   assert.equal(mod.manifest.system, true);
   assert.deepEqual(mod.systemCapabilities, ['mod-management-v1', 'core-api-v1']);
-  assert.equal(mod.tools.length, 35);
+  assert.equal(mod.tools.length, 36);
   assert.ok(mod.tools.every((tool) => tool.availability === 'mod-authorized'));
 
   assert.deepEqual(await mod.host.invokeTool('burrow_list_sessions', {}, { agentId: 'one', sessionId: 'own' }), { effectiveAgentId: 'one', global: false });
@@ -89,6 +89,8 @@ test('actual Core loads Backdoor with caller-scoped diagnostics and independentl
     ['burrow_list_sessions', { limit: '10' }],
     ['burrow_list_sessions', { limit: 201 }],
     ['burrow_get_trace', {}],
+    ['burrow_get_provider_requests', {}],
+    ['burrow_get_provider_requests', { runId: 'run', requestId: 1 }],
     ['burrow_install_mod', { modId: 'fixture', action: 'uninstall' }],
     ['burrow_update_mod', { modId: 'fixture', action: 'install' }],
     ['burrow_install_mod', { modId: 'fixture', version: 'not-a-version' }],
@@ -107,6 +109,8 @@ test('actual Core loads Backdoor with caller-scoped diagnostics and independentl
     await assert.rejects(mod.host.invokeTool(tool, input, { agentId: 'admin', sessionId: 'own' }), (error) => error.statusCode === 400, tool);
     assert.deepEqual([diagnosticCalls.length, managementCalls.length, apiCalls.length], before, tool);
   }
+  assert.deepEqual(await mod.host.invokeTool('burrow_get_provider_requests', { runId: 'run', requestId: 'post-tool' }, { agentId: 'one', sessionId: 'own' }), { effectiveAgentId: 'one', global: false });
+  assert.deepEqual(diagnosticCalls.at(-1).input, { operation: 'provider-requests', runId: 'run', requestId: 'post-tool' });
   const cursor = 'opaque-proof-cursor';
   await mod.host.invokeTool('burrow_list_run_proofs', { limit: 2, cursor }, { agentId: 'one', sessionId: 'own' });
   assert.deepEqual(diagnosticCalls.at(-1).input, { operation: 'run-proofs', limit: 2, cursor });
@@ -227,7 +231,7 @@ for (const grants of [[], ['mod-management-v1'], ['core-api-v1']]) {
     t.after(async () => { await cleanupMods(mods); await rm(root, { recursive: true, force: true }); });
     const mod = mods[0];
     assert.equal(mod.status, 'loaded', mod.error);
-    assert.equal(mod.tools.length, 35);
+    assert.equal(mod.tools.length, 36);
     assert.deepEqual(await mod.host.invokeTool('burrow_health', {}, { agentId: 'ordinary' }), { ok: true });
     if (grants.includes('mod-management-v1')) {
       assert.equal((await mod.host.invokeTool('burrow_mod_management_inventory', {}, { agentId: 'admin' })).ok, true);

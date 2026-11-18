@@ -64,6 +64,8 @@ The Settings panels use Core's authenticated `GET` / `PUT /api/operator/mods/bur
 - Mod diagnostics are opt-in and read through dedicated Core interfaces, not arbitrary mod routes.
 - Brains listings contain metadata only, excluding memory text, titles, vectors, actual source references, legacy snapshots, and provider payloads.
 
+With a compatible Core, `burrow_get_provider_requests` lists the physical provider requests for a retained run in recorded order. Pass `runId` and the source `sessionId` (defaults to the caller's session), and optionally an authorized `agentId`. Add `requestId` from the list to read one saved redacted body. The same self/global diagnostic access applies; full Core API access is not required. Captures have a three-day window and may still contain private prompt content. List metadata and select just the requests you need.
+
 Read-only does not mean safe to publish. Review and redact diagnostics before putting them into public reports.
 
 ## Administrative tools

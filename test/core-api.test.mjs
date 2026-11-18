@@ -14,13 +14,14 @@ function response(body, encoding = 'json', status = 200, headers = { 'content-ty
     byteLength: Buffer.byteLength(encoding === 'json' ? JSON.stringify(body) : body, encoding === 'base64' ? 'base64' : 'utf8') };
 }
 
-test('Backdoor declares both system capabilities and retains its 34 tools alongside one generic tool', async () => {
+test('Backdoor declares both system capabilities and registers 35 diagnostic and management tools alongside one generic tool', async () => {
   const manifest = JSON.parse(await readFile(new URL('../burrow.mod.json', import.meta.url), 'utf8'));
   assert.equal(manifest.system, true);
   assert.deepEqual(manifest.systemCapabilities, ['mod-management-v1', 'core-api-v1']);
   const tools = registered();
-  assert.equal(tools.size, 35);
+  assert.equal(tools.size, 36);
   assert.ok(tools.has('burrow_health'));
+  assert.deepEqual(tools.get('burrow_get_provider_requests').inputSchema.required, ['runId']);
   assert.ok(tools.has('burrow_update_mod'));
   assert.ok([...tools.values()].every(tool => tool.availability === 'mod-authorized'));
   const api = tools.get('burrow_api_request');
@@ -39,7 +40,7 @@ test('Backdoor declares both system capabilities and retains its 34 tools alongs
 test('activation succeeds without Core API and the tool reports core_api_unavailable explicitly', async () => {
   for (const coreApi of [undefined, null, {}]) {
     const tools = registered(coreApi);
-    assert.equal(tools.size, 35);
+    assert.equal(tools.size, 36);
     assert.deepEqual(await tools.get('burrow_api_request').handler({ path: '/api/health' }, {}), { ok: false, error: 'core_api_unavailable' });
   }
 });

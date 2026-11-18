@@ -33,6 +33,7 @@ const diagnosticTools = [
   ['burrow_active_runs','List bounded active-run and subagent summaries for an authorized agent and optional session.',object({agentId:agent,sessionId:session}), 'active-runs'],
   ['burrow_list_traces','List a bounded page of trace runs for an authorized agent session.',object({agentId:agent,sessionId:session,limit:integer(100),cursor:string({minLength:1})}), 'traces'],
   ['burrow_get_trace','Read a summarized trace for an authorized agent; tool output is omitted by default.',object({runId:string({minLength:1}),agentId:agent,sessionId:session,includeToolOutput:boolean},['runId']), 'trace'],
+  ['burrow_get_provider_requests','List a run’s saved physical provider requests, or select one redacted body by requestId. Uses existing caller-scoped diagnostics. Requires Core provider request history support.',object({runId:string({minLength:1}),agentId:agent,sessionId:session,requestId:string({minLength:1})},['runId']), 'provider-requests'],
   ['burrow_get_trace_authority','Explain authority evidence for one authorized trace.',object({runId:string({minLength:1}),agentId:agent,sessionId:session},['runId']), 'trace-authority'],
   ['burrow_list_run_proofs','List archived runtime proofs for an authorized agent/session.',object({agentId:agent,sessionId:session,limit:integer(200),cursor:string({minLength:1})}), 'run-proofs'],
   ['burrow_get_run_proof','Read one archived runtime proof for an authorized agent.',object({runId:string({minLength:1}),agentId:agent},['runId']), 'run-proof'],
