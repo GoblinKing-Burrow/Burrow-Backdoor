@@ -19,7 +19,7 @@
 
 ## Raw API results are private
 
-The 26 diagnostics keep their existing scoped, bounded projections. Session-turn metadata preserves compact source-authored delegation/parent-child markers where valid, not arbitrary metadata or raw minion task/result payloads; turn content remains a bounded preview. Read-only diagnostic results still require review before publication.
+The 27 diagnostics use Core’s authorized projections. Saved provider-request bodies are a deliberate detail view and may still contain private prompt content after redaction; list metadata first and select only the bodies needed. Session-turn metadata preserves compact source-authored delegation/parent-child markers where valid, not arbitrary metadata or raw minion task/result payloads; turn content remains a bounded preview. Read-only diagnostic results still require review before publication.
 
 `burrow_api_request` is different: it does **not** redact, truncate, remove response headers or select a safe subset. Complete conversations, memory/evidence bodies, exports, configuration and endpoint error details may be returned. Request headers, query strings and bodies can be sensitive too. The caller is responsible for choosing appropriate reads/writes, controlling downstream disclosure, and redacting public reports.
 

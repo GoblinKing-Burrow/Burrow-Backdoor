@@ -1,5 +1,9 @@
 # Sources and development
 
+## Ordinary maintenance — 18 November 2026
+
+Compared Backdoor `8e79fe2109369423ad42e62e2668c69224702693` with the prior nightly baseline. The new `burrow_get_provider_requests` schema adds one diagnostic tool: 36 total, including 27 diagnostics. The tool reference, diagnostic workflow and privacy guidance now distinguish metadata listing from saved redacted request-body inspection. Tool registration and checked-in contract test definitions were inspected; application tests and live provider calls were not run. Compatible Core history support is required, and public packages may lag source.
+
 ## Ordinary maintenance — 4 November 2026
 
 Compared Backdoor `939a5969c01242eb5bdb5f953213a67cc682abac` and Core `b62c57ef5e831bacebf2214a31c04147471c1267` with the previous ordinary baseline. The 35 registered tool names and input schemas are unchanged. Settings and Core authority now separate `modManagementAgentIds` from `coreApiAgentIds`, in addition to `diagnosticAgentIds`. Guides reflect the complete-replacement API, one-time legacy migration, independent selection, shared draft protection and responsive Admin Access groups. No runtime tests, access changes or release operations were performed; unchanged guidance retains its dated full review.

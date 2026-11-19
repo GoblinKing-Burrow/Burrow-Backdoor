@@ -18,7 +18,7 @@ On Core builds containing the mod-access authentication fix, the access settings
 
 ## Verify
 
-Ask an agent to call `burrow_health` and inspect its own sessions with `burrow_list_sessions`. The tool group is **Mod: Backdoor**. There are 35 registered tools (26 diagnostics, eight durable mod-management tools and one full API tool); discovery does not imply permission to execute every one.
+Ask an agent to call `burrow_health` and inspect its own sessions with `burrow_list_sessions`. The tool group is **Mod: Backdoor**. There are 36 registered tools (27 diagnostics, eight durable mod-management tools and one full API tool); discovery does not imply permission to execute every one.
 
 For an assigned administrator, `burrow_mod_management_inventory` verifies administrative access without changing mods. For an administrator with the separate API grant, `burrow_api_request` with `{"method":"GET","path":"/api/openapi.json"}` verifies API access without changing state and discovers the running schema. This raw result is not a diagnostic subset. An administrator is not automatically a global diagnostician; full API approval nevertheless permits cross-agent API data access.
 
@@ -33,4 +33,3 @@ Use normal **Settings → Mods** update, disable, and uninstall actions, or use 
 On compatible Core and mod builds that declare managed skills, loading this mod automatically supplies the `burrow-backdoor` skill from [Burrow-Skills](https://github.com/GoblinKing-Burrow/Burrow-Skills/tree/main/burrow-backdoor). Core maintains the installed copy as read-only and refreshes managed skills at startup, on mod lifecycle changes, and on its default six-hour schedule. You do not paste, edit, or assign that managed copy manually. The skill provides instructions; it does not grant tool or data access.
 
 The current mod manifest declares this managed skill. Automatic mod-managed delivery still requires a Core build that supports it. Older public **2026.10.19** snapshots lack the declaration; updating only the skill repository cannot add the missing integration to those older packages. See [how managed skills work](https://docs.goblin-kingdom.com/burrow-skills/managed-skills/).
-

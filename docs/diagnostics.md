@@ -26,6 +26,12 @@ Session diagnostic turns preserve only valid, compact source-authored delegation
 
 Context tools return scalar context/compression information, not transcript, prompt/support, summary-text, evidence-selection, or compression-history bodies. Active-run summaries retain compact parent/child identity, status and activity, but exclude messages, answers, steering bodies, progress payloads, and child purpose/result/error bodies.
 
+## Saved provider requests
+
+With compatible Core, use `burrow_get_provider_requests` with a retained `runId` and its source `sessionId` to list physical provider requests in recorded order. Omitting `sessionId` uses the caller’s session. Add a `requestId` returned by that list to read the corresponding saved redacted body. The existing self/global diagnostic scope applies, and full Core API access is not required.
+
+Captures have a three-day retention window, separate from longer-lived conversation or run evidence. Start with metadata and retrieve only the bodies needed. Redaction does not make prompt content public: request bodies can still contain private conversations, instructions or tool results. Review and redact before sharing.
+
 ## Installation-wide investigations
 
 Global diagnosticians can inspect Forge and opt-in mod jobs. Start with `burrow_list_mods` to see lifecycle and diagnostic support. A mod can report `supported`, `unsupported`, or `unavailable`; an unsupported diagnostic interface is not proof that the mod is broken.
@@ -44,4 +50,3 @@ Brains tools expose saved-memory counts, metadata, embedding/index state, and re
 The separately approved full API tool can return complete private API bodies and perform writes. It does not inherit these diagnostic projections or scope limits; prefer the diagnostic tools when their lower-privilege view is sufficient.
 
 All arguments are listed in the [tool reference](tools.md).
-

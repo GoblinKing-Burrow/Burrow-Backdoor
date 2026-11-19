@@ -1,6 +1,6 @@
 # Tool reference
 
-Backdoor registers **35 tools**: 26 diagnostics, eight durable mod-management tools and one full Core API tool under **Mod: Backdoor**. All top-level input schemas reject additional properties; the generic API tool accepts arbitrary header names and any JSON request body. Tools are discoverable as mod-authorized tools; Core still checks the trusted caller on every call. See [agent access](access.md) and [diagnostic limits](diagnostics.md).
+Backdoor registers **36 tools**: 27 diagnostics, eight durable mod-management tools and one full Core API tool under **Mod: Backdoor**. All top-level input schemas reject additional properties; the generic API tool accepts arbitrary header names and any JSON request body. Tools are discoverable as mod-authorized tools; Core still checks the trusted caller on every call. See [agent access](access.md) and [diagnostic limits](diagnostics.md).
 
 Required arguments are marked **required**. Other arguments are optional. No arguments means `{}`. Bounds below describe the advertised schema; Core may apply additional validation, scoping, pagination, and technical resource limits. Diagnostic output limits do not apply as a Backdoor filter on full API results.
 
@@ -184,6 +184,17 @@ Read a summarized trace for an authorized agent; tool output is omitted by defau
 | `agentId` | string | optional; minLength: 1 |
 | `sessionId` | string | optional; minLength: 1 |
 | `includeToolOutput` | boolean | optional |
+
+### burrow_get_provider_requests
+
+List a retained run’s physical provider requests in recorded order, or read one saved redacted request body using `requestId` from that list. Requires compatible Core provider-request history support. Uses caller-scoped diagnostics, not the full Core API grant. Redacted bodies may still contain private prompt content.
+
+| Argument | Type | Requirement and constraints |
+| --- | --- | --- |
+| `runId` | string | **required**; minLength: 1 |
+| `agentId` | string | optional; minLength: 1; target must be authorized |
+| `sessionId` | string | optional; minLength: 1; source session, defaults to the caller’s session |
+| `requestId` | string | optional; minLength: 1; omit for metadata, supply a listed ID for a saved body |
 
 ### burrow_get_trace_authority
 

@@ -15,7 +15,7 @@ A controlled route into the **home Burrow that hosts your agent**. Inspect runti
 
 ## What it does
 
-- **26 diagnostic tools** for health, sessions, traces, context, run proofs, Brains metadata, Forge, and mods.
+- **27 diagnostic tools** for health, sessions, traces, saved provider requests, context, run proofs, Brains metadata, Forge, and mods.
 - **8 administrative tools** for inventory, refreshing configured sources, mod lifecycle changes, and durable operation status.
 - **One full Core API tool**, `burrow_api_request`, for any relative `/api` route and method, including Archive and future endpoints. Discover the running API with `GET /api/openapi.json`.
 - **Three independent access lists**: global diagnostics, mod management and full Core API access. Ordinary agents retain caller-scoped diagnostics.
