@@ -84,8 +84,6 @@ export function mountSettings({ section, primary, overflow, accessApi, agents, s
   const inputs = new Map();
   const config = sectionConfig[section] ?? sectionConfig['global-access'];
   const form = el('form', null, 'setting-section backdoor-settings');
-  // Layout belongs to the host. Only bound the assignment collection here;
-  // fields, checkbox rows, spacing and action treatment use shared variants.
   form.append(el('h2', config.title));
   const body = el('div', null, 'settings-form settings-stack');
   form.append(body);
@@ -137,8 +135,6 @@ export function mountSettings({ section, primary, overflow, accessApi, agents, s
     const list = el('div', null, 'settings-stack backdoor-agent-list');
     list.setAttribute('aria-label', group.ariaLabel);
     list.setAttribute('role', 'group');
-    list.style.maxHeight = 'min(360px, 45dvh)';
-    list.style.overflowY = 'auto';
     list.style.overflowWrap = 'anywhere';
     box.append(list);
     const groupInputs = new Map();

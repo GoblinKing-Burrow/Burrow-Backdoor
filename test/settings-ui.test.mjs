@@ -295,14 +295,15 @@ test('requires all shared guard APIs before rendering an editable form', async (
   });
 });
 
-test('17 agents use compact native checkboxes in a bounded single form, not cards or selects', async () => fixture({
+test('17 agents use compact native checkboxes without a nested scroller, not cards or selects', async () => fixture({
   agents: Array.from({ length: 17 }, (_, i) => ({ id: `agent-${i}`, name: `Long agent name ${i}` })),
   access: { ...defaultAccess, diagnosticAgentIds: [] },
 }, async ({ root }) => {
   assert.equal(agentInputs(root).length, 17);
   assert.equal(root.descendants().some(node => ['select', 'style'].includes(node.tagName)), false);
   const list = root.descendants().find(node => node.className?.includes('backdoor-agent-list'));
-  assert.equal(list.style.overflowY, 'auto');
+  assert.equal(list.style.maxHeight, undefined);
+  assert.equal(list.style.overflowY, undefined);
   assert.equal(root.descendants().filter(node => node.className === 'settings-checkbox-row').length, 17);
 }));
 

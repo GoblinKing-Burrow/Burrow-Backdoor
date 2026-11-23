@@ -29,7 +29,7 @@ Backdoor loads on a compatible Core even without either administrative grant. If
 
 ## Drafts and layout
 
-Global Access uses the shared single-form layout. Admin Access and Core API Access each use that same single-form layout and desktop divider, with their own **Save admin access** and **Save Core API access** actions. Each capability has its own approval and agent selection. Long lists scroll within their bounded picker.
+Global Access uses the shared single-form layout. Admin Access and Core API Access each use that same single-form layout and desktop divider, with their own **Save admin access** and **Save Core API access** actions. Each capability has its own approval and agent selection. The Settings pane scrolls only when the assignments and controls no longer fit.
 
 Pending changes use Burrow’s shared Save/Discard/Stay guard. Failed saves keep the draft and can be corrected or retried; controls are disabled while saving. The host must supply `setDraft`, `navigate` and `confirm`; older hosts display an update message instead of an unguarded editor.
 
